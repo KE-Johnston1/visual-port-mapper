@@ -4,22 +4,32 @@ from nmap_parser import parse_nmap_xml
 def visualize_ports(scan_file):
     results = parse_nmap_xml(scan_file)
 
-    # Group ports by IP address
     host_ports = {}
     for entry in results:
         ip = entry['address']
-        port = entry['port']
-        host_ports.setdefault(ip, []).append(port)
+        host_ports.setdefault(ip, []).append(entry)
 
-    for ip, ports in host_ports.items():
-        plt.figure(figsize=(10, 4))
-        plt.bar(ports, [1]*len(ports))
-        plt.title(f"Open Ports for {ip}")
-        plt.xlabel("Port Number")
+    for ip, entries in host_ports.items():
+        labels = []
+        heights = []
+
+        for entry in entries:
+            label = f"{entry['port']} ({entry['service']})"
+            labels.append(label)
+            heights.append(1)
+
+        plt.figure(figsize=(12, 5))
+        plt.bar(labels, heights)
+        plt.title(f"Open Ports and Services for {ip}")
+        plt.xlabel("Port (Service)")
         plt.ylabel("Open")
+        plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
-        plt.show()
 
-# Example usage
+        filename = f"open_ports_{ip.replace('.', '_')}.png"
+        plt.savefig(filename)
+        print(f"Saved chart as {filename}")
+
 if __name__ == "__main__":
     visualize_ports("sample_scan.xml")
+
