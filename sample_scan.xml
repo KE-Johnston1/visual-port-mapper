@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<nmaprun>
+  <host>
+    <address addr="192.168.1.1" />
+    <ports>
+      <port protocol="tcp" portid="22">
+        <service name="ssh" />
+      </port>
+      <port protocol="tcp" portid="80">
+        <service name="http" />
+      </port>
+      <port protocol="tcp" portid="443">
+        <service name="https" />
+      </port>
+    </ports>
+  </host>
+</nmaprun>
