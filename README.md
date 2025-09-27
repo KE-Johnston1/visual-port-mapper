@@ -1,4 +1,14 @@
 Visual Port Mapper
+This repository showcases a modular approach to detecting and investigating SSH brute force activity using Python. Each tool is designed to be accessible, practical, and easy to extend.
+
+## Projects in This Repo
+
+This repository contains modular tools for detecting and investigating SSH brute force activity:
+
+- **SSH Brute Force Detector**: Parses logs, flags suspicious IPs, and visualizes failed login attempts.
+- **Port Scanner**: Investigates flagged IPs for open services across common ports.
+- **Walkthrough**: Documents the full detection → investigation → response flow.
+
 A Python-based tool that transforms raw Nmap scan data into clear, visual charts making network insights accessible for both technical and non-technical audiences.
 
  Features
@@ -34,3 +44,9 @@ visualizer.py	Generates bar charts from parsed data
 sample_scan.xml	Sample Nmap scan for testing
 Ethical Use Notice
 This tool does not perform exploitation, vulnerability testing, or penetration activities. It is designed solely for visualizing scan results from Nmap in a safe, educational context.
+##  Setup Instructions
+
+To install dependencies:
+
+```bash
+pip install -r requirements.txt
