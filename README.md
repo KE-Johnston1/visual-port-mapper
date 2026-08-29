@@ -2,7 +2,7 @@
 
 A defensive Python lab for turning authorised Nmap discovery data into **asset, service and exposure context** for analyst review.
 
-The project is deliberately not a vulnerability scanner and does not treat an open port as proof of compromise. It demonstrates a practical workflow:
+The project deliberately does not treat an open port as proof of compromise. It demonstrates a practical workflow:
 
 ```text
 Discovery → Asset context → Service baseline → Evidence gaps → Risk assessment → Analyst recommendation
@@ -12,7 +12,7 @@ Discovery → Asset context → Service baseline → Evidence gaps → Risk asse
 
 A network scan answers **what is visible**. A security analyst still needs to establish **whether that visibility is expected, who owns the asset, what business purpose the service has, and what evidence is missing** before making a judgement.
 
-This approach is consistent with current NIST guidance that emphasises maintaining inventories of hardware, software and services and documenting expected network ports, protocols and services. citeturn0search12turn0search0
+This mirrors current NIST Cybersecurity Framework guidance around maintaining inventories of hardware, software and services and documenting expected network ports, protocols and services. citeturn0search12turn0search0
 
 ## What it demonstrates
 
@@ -59,12 +59,11 @@ An unknown asset produces **Insufficient Evidence** rather than a fabricated ris
 ├── network_exposure.py            # Context-aware assessment logic
 ├── nmap_parser.py                 # Nmap XML parser
 ├── visualizer.py                  # Exposure visualisation
-├── port_scanner.py                # Optional authorised lab scanner
 ├── sample_scan.xml                # Synthetic Nmap-style input
 └── README.md
 ```
 
-Older SSH brute-force material remains available as historical learning work, but it is **not the canonical detection engine for this project**. ThreatTrace Lab is the dedicated alert-investigation project in this portfolio.
+The previous SSH brute-force material was removed because ThreatTrace Lab is now the dedicated alert-investigation project in this portfolio. Keeping one clear purpose per repository makes the work easier to understand and defend in an interview.
 
 ## Running the analysis
 
@@ -80,7 +79,7 @@ Run the tests:
 python -m unittest discover -s tests -v
 ```
 
-The analysis module can also be imported into your own investigation workflow:
+The analysis module can also be imported into an investigation workflow:
 
 ```python
 from network_exposure import AssetContext, ServiceObservation, assess_service
@@ -106,7 +105,7 @@ print(result)
 - Test data is synthetic and intended for educational use.
 - Only scan systems you own or have explicit permission to test.
 - The repository should not contain real credentials, customer data, private logs or production network captures.
-- Do not use the scanner against public or third-party systems without explicit authorisation.
+- Do not use network-scanning functionality against public or third-party systems without explicit authorisation.
 - Generated logs, Python caches and local output files are excluded through `.gitignore`.
 
 ## Limitations
