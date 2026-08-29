@@ -1,66 +1,124 @@
-# Visual Port Mapper
+# Network Exposure & Investigation Lab
 
-A modular Python toolkit for visualising open ports and services from Nmap scan data.  
-Designed to make network insights accessible for both technical and non-technical audiences.
+A defensive Python lab for turning authorised Nmap discovery data into **asset, service and exposure context** for analyst review.
 
-## Overview
+The project is deliberately not a vulnerability scanner and does not treat an open port as proof of compromise. It demonstrates a practical workflow:
 
-This repository includes tools for detecting and investigating SSH brute force activity:
+```text
+Discovery → Asset context → Service baseline → Evidence gaps → Risk assessment → Analyst recommendation
+```
 
-- **SSH Brute Force Detector**  
-  Parses logs, flags suspicious IP addresses, and visualises failed login attempts.
+## Why this project exists
 
-- **Port Scanner**  
-  Investigates flagged IPs for open services across common ports.
+A network scan answers **what is visible**. A security analyst still needs to establish **whether that visibility is expected, who owns the asset, what business purpose the service has, and what evidence is missing** before making a judgement.
 
-- **Walkthrough**  
-  Documents the full detection → investigation → response workflow.
+This approach is consistent with current NIST guidance that emphasises maintaining inventories of hardware, software and services and documenting expected network ports, protocols and services. citeturn0search12turn0search0
 
-## Features
+## What it demonstrates
 
-- Parses Nmap XML output using Python’s `xml.etree.ElementTree`  
-- Visualises open ports per IP address using `matplotlib`  
-- Labels each port with its corresponding service (e.g. 443 → HTTPS)  
-- Saves charts as `.png` files for documentation and sharing  
-- Runs entirely in GitHub Codespaces—no local setup required
+- Parsing Nmap XML into structured observations
+- Mapping discovered services to an asset inventory
+- Comparing observed services with an expected baseline
+- Distinguishing **expected**, **investigate**, and **insufficient evidence** outcomes
+- Explicitly recording evidence gaps rather than inventing certainty
+- Unit testing security-analysis logic
+- Visualising discovered network exposure
+- Safe, synthetic investigation scenarios
 
-## Example Output
+## Investigation principle
 
-Sample charts are stored in the repository (`ssh_attempts_chart.png`, `open_ports_192_168_1_1.png`)  
-Each visual includes service labels and detection context.
+> **An exposed service is an observation, not a verdict.**
 
-## How to Run (in GitHub Codespaces)
+For example, TCP/22 may be completely appropriate on an administration server and inappropriate on another asset. The analyst should establish context before recommending remediation.
 
-1. Open this repository in GitHub Codespaces  
-2. Install required libraries:
-pip install matplotlib
-3. Run the visualiser:
-python visualizer.py sample_scan.xml
-4. View the saved chart in the file explorer
+## Example investigation
 
-## Project Structure
+A synthetic scan identifies:
 
-| File                  | Purpose                                         |
-|-----------------------|-------------------------------------------------|
-| `nmap_parser.py`      | Parses Nmap XML and extracts port/service data |
-| `visualizer.py`       | Generates bar charts from parsed data          |
-| `sample_scan.xml`     | Sample Nmap scan for testing                   |
-| `ssh_brute_force_detector.py` | Flags suspicious SSH login attempts    |
-| `port_scanner.py`     | Scans flagged IPs for open ports               |
-| `ssh_brute_force_walkthrough.md` | Step-by-step detection guide        |
+```text
+10.10.10.20
+22/tcp   SSH
+80/tcp   HTTP
+443/tcp  HTTPS
+```
 
-## Ethical Use Notice
+The inventory identifies the host as an authorised web server and lists those services as expected. The result is therefore **Expected**, not automatically suspicious.
 
-This toolkit does not perform exploitation, vulnerability testing, or penetration activities.  
-It is intended solely for visualising scan results from Nmap in a safe, educational context.
+A different host may contain an exposed service that is not in its baseline. The tool reports **Investigate** and identifies evidence gaps such as service ownership, business justification and configuration/version review.
 
-## Setup Instructions
+An unknown asset produces **Insufficient Evidence** rather than a fabricated risk rating.
 
-To install all dependencies:
+## Repository structure
+
+```text
+.
+├── data/
+│   └── asset_inventory.json       # Synthetic asset/service baseline
+├── tests/
+│   └── test_network_exposure.py   # Analysis tests
+├── network_exposure.py            # Context-aware assessment logic
+├── nmap_parser.py                 # Nmap XML parser
+├── visualizer.py                  # Exposure visualisation
+├── port_scanner.py                # Optional authorised lab scanner
+├── sample_scan.xml                # Synthetic Nmap-style input
+└── README.md
+```
+
+Older SSH brute-force material remains available as historical learning work, but it is **not the canonical detection engine for this project**. ThreatTrace Lab is the dedicated alert-investigation project in this portfolio.
+
+## Running the analysis
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
 
+Run the tests:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The analysis module can also be imported into your own investigation workflow:
+
+```python
+from network_exposure import AssetContext, ServiceObservation, assess_service
+
+context = AssetContext(
+    owner="Web Team",
+    role="Web server",
+    criticality="high",
+    authorised=True,
+    expected_services=frozenset({"tcp/80", "tcp/443", "tcp/22"}),
+)
+
+result = assess_service(
+    ServiceObservation("10.10.10.20", 443, "tcp", "https"),
+    context,
+)
+
+print(result)
+```
+
+## Safety and data
+
+- Test data is synthetic and intended for educational use.
+- Only scan systems you own or have explicit permission to test.
+- The repository should not contain real credentials, customer data, private logs or production network captures.
+- Do not use the scanner against public or third-party systems without explicit authorisation.
+- Generated logs, Python caches and local output files are excluded through `.gitignore`.
+
+## Limitations
+
+This project is an educational investigation lab, not an enterprise asset-management platform or vulnerability-management product. It does not perform authenticated vulnerability assessment, exploitation, packet capture, continuous monitoring or automated incident response.
+
+The assessment logic is intentionally conservative: **unknown context produces an evidence gap, not an invented conclusion**.
+
+## Future development
+
+Potential future work includes change detection between authorised scan snapshots, richer service/version context, an interactive recruiter investigation mode, additional synthetic cases and broader test coverage.
 
 ## Author
 
-Created by [Karen Johnston](https://github.com/KE-Johnston1) — entry-level cybersecurity analyst focused on ethical detection tooling and modular documentation.
-
+Created by [Karen Johnston](https://github.com/KE-Johnston1) as a practical cybersecurity portfolio project focused on network visibility, evidence-based analysis and human judgement.
