@@ -1,0 +1,23 @@
+{
+  "10.10.10.20": {
+    "owner": "Web Team",
+    "role": "Web server",
+    "criticality": "high",
+    "authorised": true,
+    "expected_services": ["tcp/80", "tcp/443", "tcp/22"]
+  },
+  "10.10.10.30": {
+    "owner": "Database Team",
+    "role": "Database server",
+    "criticality": "high",
+    "authorised": true,
+    "expected_services": ["tcp/5432", "tcp/22"]
+  },
+  "10.10.10.50": {
+    "owner": "Unknown",
+    "role": "Unknown",
+    "criticality": "unknown",
+    "authorised": false,
+    "expected_services": []
+  }
+}
