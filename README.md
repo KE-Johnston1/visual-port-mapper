@@ -7,8 +7,9 @@ A defensive Python portfolio lab for turning **authorised Nmap discovery data** 
 The project demonstrates a practical investigation workflow:
 
 ```text
-Discovery → Asset context → Service baseline → Evidence gaps
-→ Risk assessment → Analyst recommendation → Documented decision
+Nmap evidence → Parser → Asset inventory → Service baseline
+→ Evidence gaps → Assessment engine → Analyst decision
+→ Recruiter console / case notes
 ```
 
 ## Why this project exists
@@ -22,13 +23,14 @@ That approach maps naturally to NIST Cybersecurity Framework (CSF) 2.0 outcomes 
 ## What it demonstrates
 
 - Parsing Nmap XML into structured observations
+- Validating that only open services become exposure observations
 - Mapping discovered services to a synthetic asset inventory
 - Comparing observed services with an expected service baseline
 - Identifying expected and unexpected exposure without equating exposure with compromise
 - Reporting evidence gaps and recommended next actions
 - Assigning a **confidence level to the assessment context**, not a probability of compromise
-- Unit testing the analysis engine
-- Visualising network exposure
+- Testing the parser, analysis engine and end-to-end evidence pipeline
+- Visualising network exposure without making security decisions in the visualisation layer
 - Working through controlled recruiter investigation scenarios
 - Documenting analyst reasoning and uncertainty
 
@@ -56,9 +58,57 @@ The tool presents evidence; **the analyst makes the judgement**.
 
 The last outcome is deliberate. Uncertainty is documented rather than converted into a false positive or invented risk rating.
 
+## End-to-end evidence pipeline
+
+The repository now has one Python path for the technical evidence workflow:
+
+```text
+sample_scan.xml
+      ↓
+nmap_parser.py
+      ↓
+ServiceObservation
+      ↓
+asset_inventory.json
+      ↓
+network_exposure.py
+      ↓
+Assessment + confidence + evidence gaps + next action
+```
+
+`investigation_pipeline.py` connects those components. It performs **no network activity**; it only processes an existing Nmap XML file and synthetic/authorised inventory data.
+
+Run it against the included synthetic evidence:
+
+```bash
+python investigation_pipeline.py
+```
+
+Example output:
+
+```text
+10.10.10.20 tcp/22 ssh: expected (high)
+10.10.10.20 tcp/80 http: expected (high)
+10.10.10.20 tcp/443 https: expected (high)
+```
+
 ## Recruiter investigation console
 
-Open [`docs/investigation-console.html`](docs/investigation-console.html) in a browser to work through the synthetic cases.
+The console is a browser-based investigation exercise. It loads its cases directly from [`data/cases.json`](data/cases.json), so the case definitions are not duplicated inside the HTML/JavaScript.
+
+Open [`docs/investigation-console.html`](docs/investigation-console.html) through a local HTTP server rather than `file://` because browsers restrict JavaScript requests for local files.
+
+From the repository root:
+
+```bash
+python -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000/docs/investigation-console.html
+```
 
 The console lets an analyst:
 
@@ -71,7 +121,7 @@ The console lets an analyst:
 - select an assessment
 - record a written rationale
 
-The cases are intentionally designed so that the analyst must distinguish **what the scan proves** from **what still needs verification**.
+The cases are intentionally designed so that the analyst must distinguish **what the evidence proves** from **what still needs verification**.
 
 See [`docs/recruiter-brief.md`](docs/recruiter-brief.md) and [`docs/case-notes-template.md`](docs/case-notes-template.md) for the intended recruiter exercise and investigation documentation format.
 
@@ -97,18 +147,21 @@ If an asset is unknown, the engine returns **Insufficient Evidence** rather than
 ```text
 .
 ├── data/
-│   ├── asset_inventory.json       # Synthetic asset/service baseline
-│   └── cases.json                 # Synthetic recruiter investigation cases
+│   ├── asset_inventory.json        # Synthetic asset/service baseline
+│   └── cases.json                  # Synthetic recruiter investigation cases
 ├── docs/
-│   ├── investigation-console.html # Interactive recruiter exercise
-│   ├── recruiter-brief.md         # What the exercise demonstrates
-│   └── case-notes-template.md     # Analyst documentation template
+│   ├── investigation-console.html  # Interactive recruiter exercise
+│   ├── recruiter-brief.md          # What the exercise demonstrates
+│   └── case-notes-template.md      # Analyst documentation template
 ├── tests/
-│   └── test_network_exposure.py   # Analysis tests
-├── network_exposure.py             # Context-aware assessment engine
-├── nmap_parser.py                  # Nmap XML parser
-├── visualizer.py                   # Exposure visualisation
-├── sample_scan.xml                 # Synthetic Nmap-style input
+│   ├── test_network_exposure.py    # Analysis tests
+│   └── test_investigation_pipeline.py # End-to-end pipeline tests
+├── network_exposure.py              # Context-aware assessment engine
+├── investigation_pipeline.py        # Parser → inventory → engine integration
+├── nmap_parser.py                   # Nmap XML evidence parser
+├── visualizer.py                    # Exposure visualisation
+├── sample_scan.xml                  # Synthetic Nmap-style input
+├── requirements.txt
 └── README.md
 ```
 
@@ -122,26 +175,7 @@ No external service is required for the core tests.
 python -m unittest discover -s tests -v
 ```
 
-The analysis module can also be imported into another authorised investigation workflow:
-
-```python
-from network_exposure import AssetContext, ServiceObservation, assess_service
-
-context = AssetContext(
-    owner="Web Team",
-    role="Web server",
-    criticality="high",
-    authorised=True,
-    expected_services=frozenset({"tcp/80", "tcp/443", "tcp/22"}),
-)
-
-result = assess_service(
-    ServiceObservation("10.10.10.20", 443, "tcp", "https"),
-    context,
-)
-
-print(result["status"], result["confidence"])
-```
+The tests cover both individual analysis decisions and the complete parser → inventory → assessment flow.
 
 ## Safety & data
 
@@ -167,7 +201,7 @@ Future work should be driven by an investigation need rather than feature count.
 - richer synthetic service/version context
 - additional investigation cases
 - stronger automated validation of case data
-- tighter integration between the Python analysis engine and the recruiter console
+- optional export of analyst case notes
 
 ## Portfolio context
 
