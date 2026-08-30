@@ -1,16 +1,28 @@
 <?xml version="1.0"?>
-<nmaprun>
+<!-- Synthetic Nmap-style data for the ThreatTrace/Network Exposure portfolio lab. -->
+<nmaprun scanner="nmap" args="nmap -sV -oX sample_scan.xml 10.10.10.20" startstr="2026-08-30T00:00:00Z">
   <host>
-    <address addr="192.168.1.1" />
+    <status state="up" reason="synthetic-data" />
+    <address addr="10.10.10.20" addrtype="ipv4" />
+    <hostnames>
+      <hostname name="WEB-01" type="user" />
+    </hostnames>
     <ports>
       <port protocol="tcp" portid="22">
-        <service name="ssh" />
+        <state state="open" reason="syn-ack" />
+        <service name="ssh" product="OpenSSH" version="9.6" method="probed" conf="10" />
       </port>
       <port protocol="tcp" portid="80">
-        <service name="http" />
+        <state state="open" reason="syn-ack" />
+        <service name="http" product="nginx" version="1.26" method="probed" conf="10" />
       </port>
       <port protocol="tcp" portid="443">
-        <service name="https" />
+        <state state="open" reason="syn-ack" />
+        <service name="https" product="nginx" version="1.26" method="probed" conf="10" />
+      </port>
+      <port protocol="tcp" portid="8080">
+        <state state="closed" reason="reset" />
+        <service name="http-proxy" />
       </port>
     </ports>
   </host>
