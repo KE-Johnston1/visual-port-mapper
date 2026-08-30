@@ -1,35 +1,79 @@
 # Network Exposure & Investigation Lab
 
-A defensive Python lab for turning authorised Nmap discovery data into **asset, service and exposure context** for analyst review.
+A defensive Python portfolio lab for turning **authorised Nmap discovery data** into asset, service and exposure context for analyst review.
 
-The project deliberately does not treat an open port as proof of compromise. It demonstrates a practical workflow:
+> **An exposed service is an observation, not a verdict.**
+
+The project demonstrates a practical investigation workflow:
 
 ```text
-Discovery → Asset context → Service baseline → Evidence gaps → Risk assessment → Analyst recommendation
+Discovery → Asset context → Service baseline → Evidence gaps
+→ Risk assessment → Analyst recommendation → Documented decision
 ```
 
 ## Why this project exists
 
-A network scan answers **what is visible**. A security analyst still needs to establish **whether that visibility is expected, who owns the asset, what business purpose the service has, and what evidence is missing** before making a judgement.
+A network scan can tell an analyst what is visible. It does not, by itself, establish whether that visibility is expected, authorised, business-required or risky.
 
-This mirrors current NIST Cybersecurity Framework guidance around maintaining inventories of hardware, software and services and documenting expected network ports, protocols and services. citeturn0search12turn0search0
+This lab therefore combines discovery data with synthetic asset context and an expected service baseline. The analysis engine reports what the evidence supports and explicitly records what is still unknown.
+
+That approach maps naturally to NIST Cybersecurity Framework (CSF) 2.0 outcomes around maintaining inventories of hardware, software, services and systems, representing authorised network communications, prioritising assets by criticality, and understanding cybersecurity risk. citeturn0search12turn0search0
 
 ## What it demonstrates
 
 - Parsing Nmap XML into structured observations
-- Mapping discovered services to an asset inventory
-- Comparing observed services with an expected baseline
-- Distinguishing **expected**, **investigate**, and **insufficient evidence** outcomes
-- Explicitly recording evidence gaps rather than inventing certainty
-- Unit testing security-analysis logic
-- Visualising discovered network exposure
-- Safe, synthetic investigation scenarios
+- Mapping discovered services to a synthetic asset inventory
+- Comparing observed services with an expected service baseline
+- Identifying expected and unexpected exposure without equating exposure with compromise
+- Reporting evidence gaps and recommended next actions
+- Assigning a **confidence level to the assessment context**, not a probability of compromise
+- Unit testing the analysis engine
+- Visualising network exposure
+- Working through controlled recruiter investigation scenarios
+- Documenting analyst reasoning and uncertainty
 
-## Investigation principle
+## Analyst workflow
 
-> **An exposed service is an observation, not a verdict.**
+```text
+1. Establish asset identity and ownership
+2. Review discovered services
+3. Compare observations with the expected baseline
+4. Identify what is known
+5. Identify evidence gaps
+6. Gather/verify additional context
+7. Make a defensible assessment
+8. Document rationale and next action
+```
 
-For example, TCP/22 may be completely appropriate on an administration server and inappropriate on another asset. The analyst should establish context before recommending remediation.
+The tool presents evidence; **the analyst makes the judgement**.
+
+### Assessment states
+
+- **Expected** — available evidence supports the service being authorised and consistent with the baseline.
+- **Requires Investigation** — the observation is unexplained or outside the baseline and needs further verification.
+- **Security Concern** — should only be selected when evidence demonstrates a material security issue or unauthorised exposure.
+- **Insufficient Evidence** — the available information is not enough to make a defensible classification.
+
+The last outcome is deliberate. Uncertainty is documented rather than converted into a false positive or invented risk rating.
+
+## Recruiter investigation console
+
+Open [`docs/investigation-console.html`](docs/investigation-console.html) in a browser to work through the synthetic cases.
+
+The console lets an analyst:
+
+- select an investigation case
+- review asset ownership, role and criticality
+- inspect discovered services
+- compare services with the expected context
+- review known evidence
+- identify evidence gaps
+- select an assessment
+- record a written rationale
+
+The cases are intentionally designed so that the analyst must distinguish **what the scan proves** from **what still needs verification**.
+
+See [`docs/recruiter-brief.md`](docs/recruiter-brief.md) and [`docs/case-notes-template.md`](docs/case-notes-template.md) for the intended recruiter exercise and investigation documentation format.
 
 ## Example investigation
 
@@ -42,44 +86,43 @@ A synthetic scan identifies:
 443/tcp  HTTPS
 ```
 
-The inventory identifies the host as an authorised web server and lists those services as expected. The result is therefore **Expected**, not automatically suspicious.
+If the authorised asset baseline lists all three services, the correct technical assessment is **Expected**. An open port is not automatically evidence of compromise.
 
-A different host may contain an exposed service that is not in its baseline. The tool reports **Investigate** and identifies evidence gaps such as service ownership, business justification and configuration/version review.
+If an authorised asset exposes TCP/8080 but the service is not in the baseline, the engine reports **Requires Investigation** and identifies evidence gaps such as business justification, service ownership, exposure scope and configuration/version review.
 
-An unknown asset produces **Insufficient Evidence** rather than a fabricated risk rating.
+If an asset is unknown, the engine returns **Insufficient Evidence** rather than inventing ownership, business purpose or risk.
 
 ## Repository structure
 
 ```text
 .
 ├── data/
-│   └── asset_inventory.json       # Synthetic asset/service baseline
+│   ├── asset_inventory.json       # Synthetic asset/service baseline
+│   └── cases.json                 # Synthetic recruiter investigation cases
+├── docs/
+│   ├── investigation-console.html # Interactive recruiter exercise
+│   ├── recruiter-brief.md         # What the exercise demonstrates
+│   └── case-notes-template.md     # Analyst documentation template
 ├── tests/
 │   └── test_network_exposure.py   # Analysis tests
-├── network_exposure.py            # Context-aware assessment logic
-├── nmap_parser.py                 # Nmap XML parser
-├── visualizer.py                  # Exposure visualisation
-├── sample_scan.xml                # Synthetic Nmap-style input
+├── network_exposure.py             # Context-aware assessment engine
+├── nmap_parser.py                  # Nmap XML parser
+├── visualizer.py                   # Exposure visualisation
+├── sample_scan.xml                 # Synthetic Nmap-style input
 └── README.md
 ```
 
 The previous SSH brute-force material was removed because ThreatTrace Lab is now the dedicated alert-investigation project in this portfolio. Keeping one clear purpose per repository makes the work easier to understand and defend in an interview.
 
-## Running the analysis
+## Running the tests
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the tests:
+No external service is required for the core tests.
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-The analysis module can also be imported into an investigation workflow:
+The analysis module can also be imported into another authorised investigation workflow:
 
 ```python
 from network_exposure import AssetContext, ServiceObservation, assess_service
@@ -97,27 +140,46 @@ result = assess_service(
     context,
 )
 
-print(result)
+print(result["status"], result["confidence"])
 ```
 
-## Safety and data
+## Safety & data
 
 - Test data is synthetic and intended for educational use.
 - Only scan systems you own or have explicit permission to test.
-- The repository should not contain real credentials, customer data, private logs or production network captures.
+- Do not place real credentials, customer data, private logs or production network captures in this repository.
 - Do not use network-scanning functionality against public or third-party systems without explicit authorisation.
-- Generated logs, Python caches and local output files are excluded through `.gitignore`.
+- Generated logs, Python caches and local output files should remain excluded through `.gitignore`.
 
 ## Limitations
 
-This project is an educational investigation lab, not an enterprise asset-management platform or vulnerability-management product. It does not perform authenticated vulnerability assessment, exploitation, packet capture, continuous monitoring or automated incident response.
+This is an educational investigation lab, not an enterprise asset-management, vulnerability-management or SIEM product.
 
-The assessment logic is intentionally conservative: **unknown context produces an evidence gap, not an invented conclusion**.
+It does **not** perform authenticated vulnerability assessment, exploitation, packet capture, continuous monitoring or automated incident response.
+
+The assessment engine is intentionally conservative. Its confidence value describes the strength of the available **context**, not the likelihood that a system is compromised.
 
 ## Future development
 
-Potential future work includes change detection between authorised scan snapshots, richer service/version context, an interactive recruiter investigation mode, additional synthetic cases and broader test coverage.
+Future work should be driven by an investigation need rather than feature count. Possible extensions include:
+
+- comparing two authorised scan snapshots to identify service changes
+- richer synthetic service/version context
+- additional investigation cases
+- stronger automated validation of case data
+- tighter integration between the Python analysis engine and the recruiter console
+
+## Portfolio context
+
+This repository is designed to complement **ThreatTrace Lab** rather than duplicate it:
+
+| Project | Demonstrates |
+|---|---|
+| ThreatTrace Lab | Security-alert triage, evidence correlation and investigation |
+| Network Exposure & Investigation Lab | Network discovery, asset context and exposure assessment |
+
+Together they demonstrate a consistent principle: **collect evidence, establish context, document uncertainty and make a defensible human decision.**
 
 ## Author
 
-Created by [Karen Johnston](https://github.com/KE-Johnston1) as a practical cybersecurity portfolio project focused on network visibility, evidence-based analysis and human judgement.
+Created by [KE-Johnston1](https://github.com/KE-Johnston1) as a practical cybersecurity portfolio project focused on network visibility, evidence-based analysis and human judgement.
