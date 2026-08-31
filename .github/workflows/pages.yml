@@ -1,0 +1,55 @@
+name: Deploy portfolio demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build site
+        run: |
+          rm -rf _site
+          mkdir -p _site/docs _site/data
+          cp -R docs/. _site/docs/
+          cp -R data/. _site/data/
+          cat > _site/index.html <<'EOF'
+          <!doctype html>
+          <html lang="en">
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visual Port Mapper — Recruiter Demo</title></head>
+          <body style="font-family:system-ui,sans-serif;max-width:800px;margin:40px auto;padding:20px">
+          <h1>Visual Port Mapper</h1>
+          <p>Interactive defensive network investigation portfolio demonstration.</p>
+          <p><a href="docs/recruiter-demo.html">▶ Start the guided recruiter investigation</a></p>
+          <p><a href="docs/investigation-console.html">Open the hands-on investigation console</a></p>
+          </body></html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
