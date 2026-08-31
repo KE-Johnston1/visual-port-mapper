@@ -4,13 +4,24 @@ A defensive Python portfolio lab for turning **authorised Nmap discovery data** 
 
 > **An exposed service is an observation, not a verdict.**
 
-The project demonstrates a practical investigation workflow:
+## 👀 Recruiter first: watch the investigation
 
-```text
-Nmap evidence → Parser → Asset inventory → Service baseline
-→ Evidence gaps → Assessment engine → Analyst decision
-→ Recruiter console / case notes
-```
+You do **not** need to understand Python to see what this project demonstrates.
+
+### ▶ [Open the guided recruiter investigation](docs/recruiter-demo.html)
+
+The guided demo lets a non-technical reviewer watch a synthetic network investigation unfold step by step:
+
+1. A network observation is identified.
+2. Asset and business context is established.
+3. A legitimate explanation is presented.
+4. Additional evidence is requested.
+5. The explanation is independently verified.
+6. The analyst records a final, evidence-based decision.
+
+The demo is deliberately interactive so a recruiter can see the **investigative reasoning**, not just a collection of source files.
+
+For a deeper, hands-on exercise, use the [interactive investigation console](docs/investigation-console.html).
 
 ## Why this project exists
 
@@ -18,14 +29,12 @@ A network scan can tell an analyst what is visible. It does not, by itself, esta
 
 This lab therefore combines discovery data with synthetic asset context and an expected service baseline. The analysis engine reports what the evidence supports and explicitly records what is still unknown.
 
-That approach maps naturally to NIST Cybersecurity Framework (CSF) 2.0 outcomes around maintaining inventories of hardware, software, services and systems, representing authorised network communications, prioritising assets by criticality, and understanding cybersecurity risk. citeturn0search12turn0search0
-
 ## What it demonstrates
 
 - Parsing Nmap XML into structured observations
 - Validating that only open services become exposure observations
 - Mapping discovered services to a synthetic asset inventory
-- Comparing observed services with an expected service baseline
+- Comparing discovered services with an expected service baseline
 - Identifying expected and unexpected exposure without equating exposure with compromise
 - Reporting evidence gaps and recommended next actions
 - Assigning a **confidence level to the assessment context**, not a probability of compromise
@@ -60,8 +69,6 @@ The last outcome is deliberate. Uncertainty is documented rather than converted 
 
 ## End-to-end evidence pipeline
 
-The repository now has one Python path for the technical evidence workflow:
-
 ```text
 sample_scan.xml
       ↓
@@ -84,14 +91,6 @@ Run it against the included synthetic evidence:
 python investigation_pipeline.py
 ```
 
-Example output:
-
-```text
-10.10.10.20 tcp/22 ssh: expected (high)
-10.10.10.20 tcp/80 http: expected (high)
-10.10.10.20 tcp/443 https: expected (high)
-```
-
 ## Recruiter investigation console
 
 The console is a browser-based investigation exercise. It loads its cases directly from [`data/cases.json`](data/cases.json), so the case definitions are not duplicated inside the HTML/JavaScript.
@@ -105,6 +104,12 @@ python -m http.server 8000
 ```
 
 Then open:
+
+```text
+http://localhost:8000/docs/recruiter-demo.html
+```
+
+or:
 
 ```text
 http://localhost:8000/docs/investigation-console.html
@@ -121,61 +126,15 @@ The console lets an analyst:
 - select an assessment
 - record a written rationale
 
-The cases are intentionally designed so that the analyst must distinguish **what the evidence proves** from **what still needs verification**.
+## Visual investigation aids
 
-See [`docs/recruiter-brief.md`](docs/recruiter-brief.md) and [`docs/case-notes-template.md`](docs/case-notes-template.md) for the intended recruiter exercise and investigation documentation format.
+The console includes:
 
-## Example investigation
-
-A synthetic scan identifies:
-
-```text
-10.10.10.20
-22/tcp   SSH
-80/tcp   HTTP
-443/tcp  HTTPS
-```
-
-If the authorised asset baseline lists all three services, the correct technical assessment is **Expected**. An open port is not automatically evidence of compromise.
-
-If an authorised asset exposes TCP/8080 but the service is not in the baseline, the engine reports **Requires Investigation** and identifies evidence gaps such as business justification, service ownership, exposure scope and configuration/version review.
-
-If an asset is unknown, the engine returns **Insufficient Evidence** rather than inventing ownership, business purpose or risk.
-
-## Repository structure
-
-```text
-.
-├── data/
-│   ├── asset_inventory.json        # Synthetic asset/service baseline
-│   └── cases.json                  # Synthetic recruiter investigation cases
-├── docs/
-│   ├── investigation-console.html  # Interactive recruiter exercise
-│   ├── recruiter-brief.md          # What the exercise demonstrates
-│   └── case-notes-template.md      # Analyst documentation template
-├── tests/
-│   ├── test_network_exposure.py    # Analysis tests
-│   └── test_investigation_pipeline.py # End-to-end pipeline tests
-├── network_exposure.py              # Context-aware assessment engine
-├── investigation_pipeline.py        # Parser → inventory → engine integration
-├── nmap_parser.py                   # Nmap XML evidence parser
-├── visualizer.py                    # Exposure visualisation
-├── sample_scan.xml                  # Synthetic Nmap-style input
-├── requirements.txt
-└── README.md
-```
-
-The previous SSH brute-force material was removed because ThreatTrace Lab is now the dedicated alert-investigation project in this portfolio. Keeping one clear purpose per repository makes the work easier to understand and defend in an interview.
-
-## Running the tests
-
-No external service is required for the core tests.
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-The tests cover both individual analysis decisions and the complete parser → inventory → assessment flow.
+- **Exposure heatmap** — shows observed services against a small set of common service ports without declaring compromise.
+- **Asset relationship view** — provides simplified investigative context around an asset and its observed services.
+- **Investigation timeline** — presents the sequence of synthetic evidence available to the analyst.
+- **Evidence completeness indicator** — shows known evidence versus outstanding gaps; it is not a probability of compromise.
+- **Decision trail** — records the assessment, rationale, verification reminder and disposition guidance.
 
 ## Safety & data
 
@@ -192,6 +151,40 @@ This is an educational investigation lab, not an enterprise asset-management, vu
 It does **not** perform authenticated vulnerability assessment, exploitation, packet capture, continuous monitoring or automated incident response.
 
 The assessment engine is intentionally conservative. Its confidence value describes the strength of the available **context**, not the likelihood that a system is compromised.
+
+## Running the tests
+
+No external service is required for the core tests.
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The tests cover both individual analysis decisions and the complete parser → inventory → assessment flow.
+
+## Repository structure
+
+```text
+.
+├── data/
+│   ├── asset_inventory.json
+│   └── cases.json
+├── docs/
+│   ├── recruiter-demo.html       # Guided recruiter experience
+│   ├── investigation-console.html # Hands-on analyst console
+│   ├── recruiter-brief.md
+│   └── case-notes-template.md
+├── tests/
+│   ├── test_network_exposure.py
+│   └── test_investigation_pipeline.py
+├── network_exposure.py
+├── investigation_pipeline.py
+├── nmap_parser.py
+├── visualizer.py
+├── sample_scan.xml
+├── requirements.txt
+└── README.md
+```
 
 ## Future development
 
@@ -212,7 +205,9 @@ This repository is designed to complement **ThreatTrace Lab** rather than duplic
 | ThreatTrace Lab | Security-alert triage, evidence correlation and investigation |
 | Network Exposure & Investigation Lab | Network discovery, asset context and exposure assessment |
 
-Together they demonstrate a consistent principle: **collect evidence, establish context, document uncertainty and make a defensible human decision.**
+Together they demonstrate a consistent principle:
+
+> **Collect evidence, establish context, verify important claims, document uncertainty and make a defensible human decision.**
 
 ## Author
 
