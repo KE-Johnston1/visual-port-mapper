@@ -24,6 +24,12 @@
       "Which administrators require SSH access.",
       "Whether the discovered SSH service matches the approved baseline."
     ],
+    "timeline": [
+      {"time": "T0", "event": "Network discovery identifies TCP/22, TCP/80 and TCP/443."},
+      {"time": "T1", "event": "TCP/22 is compared with the documented service baseline and is not listed."},
+      {"time": "T2", "event": "Web Operations states that administrators normally use SSH for maintenance."},
+      {"time": "T3", "event": "Verification is required before the exposure can be closed as expected."}
+    ],
     "assessment_guidance": {
       "Expected": "Select only if evidence establishes that SSH is authorised and appropriate for this asset.",
       "Requires Investigation": "Appropriate when SSH is unexplained but more evidence is available or expected.",
@@ -54,6 +60,12 @@
       "Whether either service is authorised.",
       "Whether the host is externally reachable.",
       "Operating system and service versions."
+    ],
+    "timeline": [
+      {"time": "T0", "event": "Network discovery identifies an otherwise unknown host."},
+      {"time": "T1", "event": "TCP/22 and TCP/8080 are observed as listening services."},
+      {"time": "T2", "event": "No owner, business purpose or approved service baseline is available."},
+      {"time": "T3", "event": "Ownership and authorisation must be established before closure."}
     ],
     "assessment_guidance": {
       "Expected": "Do not select without establishing ownership and authorised purpose.",
