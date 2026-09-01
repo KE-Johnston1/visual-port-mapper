@@ -23,6 +23,13 @@
       "Whether the host is externally reachable.",
       "Operating system and service versions."
     ],
+    "verification_checks": [
+      "Identify the asset owner and business purpose.",
+      "Confirm whether the host and both exposed services are authorised.",
+      "Correlate the discovery time with approved changes, maintenance or testing activity.",
+      "Verify exposure scope using authorised network, firewall or routing evidence.",
+      "Establish service and operating-system context before deciding on remediation."
+    ],
     "timeline": [
       {"time": "T0", "event": "Network discovery identifies an otherwise unknown host."},
       {"time": "T1", "event": "TCP/22 and TCP/8080 are observed as listening services."},
@@ -58,6 +65,12 @@
       "Whether the current configuration still matches the approved change record.",
       "Whether exposure scope remains appropriate for the asset role."
     ],
+    "verification_checks": [
+      "Confirm the service baseline is current and tied to an approved change or configuration record.",
+      "Verify the observed exposure scope remains appropriate for the asset role.",
+      "Check whether any recent configuration or ownership change could explain the observation.",
+      "Record the verification evidence before treating the assessment as closed."
+    ],
     "timeline": [
       {"time": "T0", "event": "Network discovery identifies TCP/22, TCP/80 and TCP/443."},
       {"time": "T1", "event": "Observed services are compared with the approved service baseline."},
@@ -65,8 +78,8 @@
       {"time": "T3", "event": "The analyst records the service as expected while retaining normal change-management checks."}
     ],
     "assessment_guidance": {
-      "Expected": "Appropriate because the observed services match the authorised baseline.",
-      "Requires Investigation": "Use only if additional evidence contradicts the current baseline.",
+      "Expected": "Appropriate because the observed services match the authorised baseline, subject to verification.",
+      "Requires Investigation": "Use if additional evidence contradicts the current baseline.",
       "Security Concern": "Requires evidence of unauthorised or materially risky exposure.",
       "Insufficient Evidence": "Use if the available context cannot establish that the baseline remains valid."
     }
