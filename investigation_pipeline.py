@@ -4,6 +4,7 @@ The pipeline connects Nmap XML evidence to the asset inventory and the
 context-aware assessment engine. It performs no network activity itself.
 """
 
+import ipaddress
 import json
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,11 @@ def load_inventory(path: str | Path = DEFAULT_INVENTORY) -> dict[str, AssetConte
     required = {"owner", "role", "criticality", "authorised"}
 
     for ip, value in raw.items():
+        try:
+            ipaddress.ip_address(str(ip))
+        except ValueError as exc:
+            raise InventoryError(f"Inventory key {ip!r} is not a valid IP address.") from exc
+
         if not isinstance(value, dict):
             raise InventoryError(f"Inventory record for {ip!r} must be an object.")
         missing = required - value.keys()
@@ -46,6 +52,14 @@ def load_inventory(path: str | Path = DEFAULT_INVENTORY) -> dict[str, AssetConte
         expected = value.get("expected_services", [])
         if not isinstance(expected, list) or not all(isinstance(item, str) for item in expected):
             raise InventoryError(f"Inventory record for {ip!r} must contain a list of service strings.")
+        for service in expected:
+            parts = service.lower().split("/", 1)
+            if len(parts) != 2 or not parts[0] or not parts[1].isdigit():
+                raise InventoryError(
+                    f"Inventory record for {ip!r} contains invalid service {service!r}; expected protocol/port."
+                )
+            if not 1 <= int(parts[1]) <= 65535:
+                raise InventoryError(f"Inventory record for {ip!r} contains invalid port in {service!r}.")
 
         inventory[str(ip)] = AssetContext(
             owner=str(value["owner"]),
