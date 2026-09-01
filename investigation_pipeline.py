@@ -28,9 +28,11 @@ class CaseDataError(ValueError):
 
 def _validate_service_key(service: str, *, source: str) -> str:
     """Validate and normalise a protocol/port service key."""
+    if not isinstance(service, str):
+        raise InventoryError(f"{source} contains a non-string service {service!r}.")
     parts = service.strip().lower().split("/", 1)
-    if len(parts) != 2 or not parts[0] or not parts[1].isdigit():
-        raise InventoryError(f"{source} contains invalid service {service!r}; expected protocol/port.")
+    if len(parts) != 2 or parts[0] not in {"tcp", "udp"} or not parts[1].isdigit():
+        raise InventoryError(f"{source} contains invalid service {service!r}; expected tcp/port or udp/port.")
     if not 1 <= int(parts[1]) <= 65535:
         raise InventoryError(f"{source} contains invalid port in {service!r}.")
     return f"{parts[0]}/{int(parts[1])}"
@@ -84,7 +86,10 @@ def load_inventory(path: str | Path = DEFAULT_INVENTORY) -> dict[str, AssetConte
     return inventory
 
 
-def load_cases(path: str | Path = DEFAULT_CASES, inventory: dict[str, AssetContext] | None = None) -> dict[str, dict[str, Any]]:
+def load_cases(
+    path: str | Path = DEFAULT_CASES,
+    inventory: dict[str, AssetContext] | None = None,
+) -> dict[str, dict[str, Any]]:
     """Load and validate browser investigation cases against the inventory."""
     cases_path = Path(path)
     try:
@@ -96,7 +101,21 @@ def load_cases(path: str | Path = DEFAULT_CASES, inventory: dict[str, AssetConte
         raise CaseDataError("Investigation cases must contain a non-empty JSON object keyed by case ID.")
 
     inventory = inventory if inventory is not None else load_inventory()
-    required = {"title", "asset", "ip", "owner", "role", "criticality", "discovered_services", "expected_services", "known", "evidence_gaps", "timeline", "assessment_guidance"}
+    required = {
+        "title",
+        "asset",
+        "ip",
+        "owner",
+        "role",
+        "criticality",
+        "discovered_services",
+        "expected_services",
+        "known",
+        "evidence_gaps",
+        "verification_checks",
+        "timeline",
+        "assessment_guidance",
+    }
 
     for case_id, case in raw.items():
         if not isinstance(case_id, str) or not case_id.strip():
@@ -132,21 +151,32 @@ def load_cases(path: str | Path = DEFAULT_CASES, inventory: dict[str, AssetConte
             if isinstance(port, bool) or not isinstance(port, int) or not 1 <= port <= 65535:
                 raise CaseDataError(f"Case {case_id!r} contains invalid port {port!r}.")
             protocol = str(service["protocol"]).strip().lower()
-            if not protocol:
-                raise CaseDataError(f"Case {case_id!r} contains an empty service protocol.")
+            if protocol not in {"tcp", "udp"}:
+                raise CaseDataError(f"Case {case_id!r} contains unsupported protocol {protocol!r}.")
+            if not isinstance(service["service"], str) or not service["service"].strip():
+                raise CaseDataError(f"Case {case_id!r} contains an empty service name.")
             discovered_keys.add(f"{protocol}/{port}")
 
         expected = case["expected_services"]
-        if not isinstance(expected, list) or not all(isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535 for port in expected):
+        if not isinstance(expected, list) or not all(
+            isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535
+            for port in expected
+        ):
             raise CaseDataError(f"Case {case_id!r} expected_services must contain valid port numbers.")
         expected_keys = {f"tcp/{port}" for port in expected}
         if not expected_keys.issubset(discovered_keys):
             raise CaseDataError(f"Case {case_id!r} lists expected ports that are not present in discovered_services.")
 
-        for field in ("known", "evidence_gaps"):
-            if not isinstance(case[field], list) or not all(isinstance(item, str) and item.strip() for item in case[field]):
+        for field in ("known", "evidence_gaps", "verification_checks"):
+            if not isinstance(case[field], list) or not all(
+                isinstance(item, str) and item.strip() for item in case[field]
+            ):
                 raise CaseDataError(f"Case {case_id!r} field {field!r} must contain non-empty strings.")
-        if not isinstance(case["timeline"], list) or not all(isinstance(item, dict) and {"time", "event"}.issubset(item) for item in case["timeline"]):
+        if not case["verification_checks"]:
+            raise CaseDataError(f"Case {case_id!r} must contain at least one verification check.")
+        if not isinstance(case["timeline"], list) or not all(
+            isinstance(item, dict) and {"time", "event"}.issubset(item) for item in case["timeline"]
+        ):
             raise CaseDataError(f"Case {case_id!r} timeline must contain time/event records.")
         if not isinstance(case["assessment_guidance"], dict):
             raise CaseDataError(f"Case {case_id!r} assessment_guidance must be an object.")
