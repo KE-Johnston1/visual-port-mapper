@@ -6,19 +6,19 @@ A defensive Python portfolio lab for turning **authorised Nmap discovery data** 
 
 ## What this project demonstrates
 
-This project is designed to show how I approach network-security findings as an analyst rather than treating technical observations as automatic verdicts.
+This project shows how I approach network-security findings as an analyst rather than treating technical observations as automatic verdicts.
 
-- Parsing Nmap XML into structured observations
-- Validating that only open services become exposure observations
-- Mapping discovered services to a synthetic asset inventory
-- Comparing discovered services with an expected service baseline
-- Identifying expected and unexpected exposure without equating exposure with compromise
-- Reporting evidence gaps and recommended next actions
-- Assigning a **confidence level to the assessment context**, not a probability of compromise
-- Testing the parser, analysis engine and end-to-end evidence pipeline
-- Visualising network exposure without making security decisions in the visualisation layer
-- Working through controlled investigation scenarios
-- Documenting analyst reasoning, uncertainty and verification decisions
+- Parse Nmap XML into structured observations.
+- Validate that only open services become exposure observations.
+- Preserve useful service/version context when it is available.
+- Map discovered services to a synthetic asset inventory.
+- Compare observations with an expected service baseline.
+- Identify unexpected exposure without equating exposure with compromise.
+- Report evidence gaps and recommended next actions.
+- Assign confidence to the strength of the available context, not to the probability of compromise.
+- Test parser failures, assessment decisions and the complete evidence pipeline.
+- Visualise network exposure without making security decisions in the visualisation layer.
+- Work through controlled investigation scenarios and document analyst reasoning.
 
 ## Analyst workflow
 
@@ -28,12 +28,12 @@ This project is designed to show how I approach network-security findings as an 
 3. Compare observations with the expected baseline
 4. Identify what is known
 5. Identify evidence gaps
-6. Gather/verify additional context
+6. Gather and verify additional context
 7. Make a defensible assessment
 8. Document rationale and next action
 ```
 
-The tool presents evidence; **the analyst makes the judgement**.
+The software presents evidence; **the analyst makes the judgement**.
 
 ### Assessment states
 
@@ -42,7 +42,7 @@ The tool presents evidence; **the analyst makes the judgement**.
 - **Security Concern** — should only be selected when evidence demonstrates a material security issue or unauthorised exposure.
 - **Insufficient Evidence** — the available information is not enough to make a defensible classification.
 
-The last outcome is deliberate. Uncertainty is documented rather than converted into a false positive or invented risk rating.
+Uncertainty is documented rather than converted into a false positive or invented risk rating.
 
 ## End-to-end evidence pipeline
 
@@ -70,7 +70,7 @@ python investigation_pipeline.py
 
 ## Investigation console
 
-The project includes a browser-based investigation exercise. It loads its cases directly from [`data/cases.json`](data/cases.json), so the case definitions are not duplicated inside the HTML/JavaScript.
+The project includes a browser-based investigation exercise. It loads case data directly from [`data/cases.json`](data/cases.json), keeping the scenario data separate from the interface.
 
 Open [`docs/investigation-console.html`](docs/investigation-console.html) through a local HTTP server rather than `file://` because browsers restrict JavaScript requests for local files.
 
@@ -88,14 +88,14 @@ http://localhost:8000/docs/investigation-console.html
 
 The console lets an analyst:
 
-- select an investigation case
-- review asset ownership, role and criticality
-- inspect discovered services
-- compare services with the expected context
-- review known evidence
-- identify evidence gaps
-- select an assessment
-- record a written rationale
+- select an investigation case;
+- review asset ownership, role and criticality;
+- inspect discovered services;
+- compare services with the expected context;
+- review known evidence;
+- identify evidence gaps;
+- select an assessment; and
+- record a written rationale and disposition guidance.
 
 ## Visual investigation aids
 
@@ -111,7 +111,7 @@ The console includes:
 
 For a concise explanation of the investigative approach, see [`docs/recruiter-brief.md`](docs/recruiter-brief.md).
 
-The brief explains the human-in-the-loop approach, evidence gaps, verification and the distinction between an observation and a security verdict.
+The separate [`docs/recruiter-investigation.md`](docs/recruiter-investigation.md) provides a worked investigation scenario and example analyst communication.
 
 ## Safety & data
 
@@ -119,7 +119,8 @@ The brief explains the human-in-the-loop approach, evidence gaps, verification a
 - Only scan systems you own or have explicit permission to test.
 - Do not place real credentials, customer data, private logs or production network captures in this repository.
 - Do not use network-scanning functionality against public or third-party systems without explicit authorisation.
-- Generated logs, Python caches and local output files should remain excluded through `.gitignore`.
+- The project does not execute Nmap, capture packets, exploit hosts or perform automated incident response.
+- Generated logs, Python caches, coverage data and local output files are excluded through `.gitignore`.
 
 ## Limitations
 
@@ -137,7 +138,7 @@ No external service is required for the core tests.
 python -m unittest discover -s tests -v
 ```
 
-The tests cover both individual analysis decisions and the complete parser → inventory → assessment flow.
+The tests cover expected and unexpected exposure, unknown assets, unauthorised assets, baseline normalisation, malformed Nmap input, invalid inventory data and the complete parser → inventory → assessment flow.
 
 ## Repository structure
 
@@ -149,8 +150,8 @@ The tests cover both individual analysis decisions and the complete parser → i
 ├── docs/
 │   ├── investigation-console.html # Hands-on analyst console
 │   ├── recruiter-brief.md         # Concise project explanation
-│   ├── recruiter-investigation.md # Investigation walkthrough
-│   └── case-notes-template.md
+│   ├── recruiter-investigation.md # Worked investigation scenario
+│   └── case-notes-template.md     # Analyst notes template
 ├── tests/
 │   ├── test_network_exposure.py
 │   └── test_investigation_pipeline.py
@@ -167,11 +168,11 @@ The tests cover both individual analysis decisions and the complete parser → i
 
 Future work should be driven by an investigation need rather than feature count. Possible extensions include:
 
-- comparing two authorised scan snapshots to identify service changes
-- richer synthetic service/version context
-- additional investigation cases
-- stronger automated validation of case data
-- optional export of analyst case notes
+- comparing two authorised scan snapshots to identify service changes;
+- richer synthetic service/version context;
+- additional investigation cases;
+- stronger automated validation of case data; and
+- optional export of analyst case notes.
 
 ## Portfolio context
 
