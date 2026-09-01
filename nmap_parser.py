@@ -17,9 +17,9 @@ class NmapParseError(ValueError):
 def parse_nmap_xml(file_path: str | Path) -> list[dict[str, Any]]:
     """Return open-service observations from an Nmap XML file.
 
-    The parser keeps useful Nmap context such as service product/version and
-    Nmap's service-confidence value. Closed/filtered ports are ignored because
-    the investigation model is focused on exposed services.
+    Closed and filtered ports are ignored because the investigation model is
+    focused on exposed services. Useful service context is preserved when it
+    is present in the scan output.
     """
     path = Path(file_path)
     try:
@@ -50,13 +50,16 @@ def parse_nmap_xml(file_path: str | Path) -> list[dict[str, Any]]:
             port_id = port.get("portid")
             if not port_id or not port_id.isdigit():
                 continue
+            port_number = int(port_id)
+            if not 1 <= port_number <= 65535:
+                continue
 
             service = port.find("service")
             service_name = service.get("name", "unknown") if service is not None else "unknown"
 
             observation: dict[str, Any] = {
                 "address": address,
-                "port": int(port_id),
+                "port": port_number,
                 "protocol": protocol,
                 "service": service_name,
                 "state": "open",
