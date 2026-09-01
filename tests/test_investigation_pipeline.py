@@ -35,6 +35,7 @@ class InvestigationPipelineTests(unittest.TestCase):
             self.assertEqual(case["owner"], context.owner, case_id)
             self.assertEqual(case["role"], context.role, case_id)
             self.assertEqual(case["criticality"].lower(), context.criticality.lower(), case_id)
+            self.assertTrue(case["verification_checks"], case_id)
 
     def test_unknown_asset_is_insufficient_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -86,6 +87,16 @@ class InvestigationPipelineTests(unittest.TestCase):
             with self.assertRaises(InventoryError):
                 load_inventory(inventory)
 
+    def test_unsupported_expected_service_protocol_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            inventory = Path(directory) / "inventory.json"
+            inventory.write_text(json.dumps({"10.0.0.1": {
+                "owner": "Team", "role": "Server", "criticality": "low",
+                "authorised": True, "expected_services": ["icmp/7"]
+            }}), encoding="utf-8")
+            with self.assertRaises(InventoryError):
+                load_inventory(inventory)
+
     def test_case_loader_rejects_unknown_inventory_asset(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "cases.json"
@@ -109,8 +120,17 @@ class InvestigationPipelineTests(unittest.TestCase):
             path = Path(directory) / "cases.json"
             cases = load_cases()
             bad = dict(cases["NET-001"])
-            bad.pop("timeline")
+            bad.pop("verification_checks")
             cases["NET-BAD"] = bad
+            path.write_text(json.dumps(cases), encoding="utf-8")
+            with self.assertRaises(CaseDataError):
+                load_cases(path)
+
+    def test_case_loader_rejects_empty_verification_checks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cases.json"
+            cases = load_cases()
+            cases["NET-BAD"] = dict(cases["NET-001"], verification_checks=[])
             path.write_text(json.dumps(cases), encoding="utf-8")
             with self.assertRaises(CaseDataError):
                 load_cases(path)
