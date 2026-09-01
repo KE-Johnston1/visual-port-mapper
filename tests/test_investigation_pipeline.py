@@ -12,8 +12,7 @@ ROOT = Path(__file__).parents[1]
 
 class InvestigationPipelineTests(unittest.TestCase):
     def test_sample_scan_flows_through_parser_inventory_and_engine(self):
-        scan = ROOT / "sample_scan.xml"
-        results = analyse_nmap_file(scan)
+        results = analyse_nmap_file(ROOT / "sample_scan.xml")
 
         self.assertEqual(len(results), 3)
         statuses = {item["assessment"]["status"] for item in results}
@@ -67,6 +66,26 @@ class InvestigationPipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             inventory = Path(directory) / "inventory.json"
             inventory.write_text(json.dumps({"10.0.0.1": {"owner": "Team"}}), encoding="utf-8")
+            with self.assertRaises(InventoryError):
+                load_inventory(inventory)
+
+    def test_invalid_inventory_ip_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            inventory = Path(directory) / "inventory.json"
+            inventory.write_text(json.dumps({"not-an-ip": {
+                "owner": "Team", "role": "Server", "criticality": "low",
+                "authorised": True, "expected_services": []
+            }}), encoding="utf-8")
+            with self.assertRaises(InventoryError):
+                load_inventory(inventory)
+
+    def test_invalid_expected_service_format_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            inventory = Path(directory) / "inventory.json"
+            inventory.write_text(json.dumps({"10.0.0.1": {
+                "owner": "Team", "role": "Server", "criticality": "low",
+                "authorised": True, "expected_services": ["ssh/99999"]
+            }}), encoding="utf-8")
             with self.assertRaises(InventoryError):
                 load_inventory(inventory)
 
