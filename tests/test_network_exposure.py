@@ -44,6 +44,26 @@ class NetworkExposureTests(unittest.TestCase):
         self.assertEqual(result["status"], "investigate")
         self.assertEqual(result["confidence"], "medium")
 
+    def test_invalid_observation_ip_is_rejected(self):
+        with self.assertRaises(ValueError):
+            ServiceObservation("not-an-ip", 22, "tcp", "ssh")
+
+    def test_invalid_observation_port_is_rejected(self):
+        with self.assertRaises(ValueError):
+            ServiceObservation("10.10.10.20", 70000, "tcp", "ssh")
+
+    def test_invalid_observation_protocol_is_rejected(self):
+        with self.assertRaises(ValueError):
+            ServiceObservation("10.10.10.20", 22, "icmp", "ssh")
+
+    def test_invalid_observation_service_is_rejected(self):
+        with self.assertRaises(ValueError):
+            ServiceObservation("10.10.10.20", 22, "tcp", "")
+
+    def test_invalid_asset_expected_services_are_rejected(self):
+        with self.assertRaises(ValueError):
+            AssetContext("Web Team", "Web server", "high", True, frozenset({""}))
+
 
 if __name__ == "__main__":
     unittest.main()
