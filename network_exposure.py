@@ -61,7 +61,7 @@ def assess_service(observation: ServiceObservation, context: AssetContext | None
             "recommended_action": "Verify ownership and authorised status before deciding whether remediation is required.",
         }
 
-    if service_key in context.expected_services:
+    if service_key in {item.lower() for item in context.expected_services}:
         return {
             "status": "expected",
             "confidence": "high",
