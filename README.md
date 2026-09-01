@@ -4,32 +4,9 @@ A defensive Python portfolio lab for turning **authorised Nmap discovery data** 
 
 > **An exposed service is an observation, not a verdict.**
 
-## 👀 Recruiter first: watch the investigation
+## What this project demonstrates
 
-You do **not** need to understand Python to see what this project demonstrates.
-
-### ▶ [Open the guided recruiter investigation](docs/recruiter-demo.html)
-
-The guided demo lets a non-technical reviewer watch a synthetic network investigation unfold step by step:
-
-1. A network observation is identified.
-2. Asset and business context is established.
-3. A legitimate explanation is presented.
-4. Additional evidence is requested.
-5. The explanation is independently verified.
-6. The analyst records a final, evidence-based decision.
-
-The demo is deliberately interactive so a recruiter can see the **investigative reasoning**, not just a collection of source files.
-
-For a deeper, hands-on exercise, use the [interactive investigation console](docs/investigation-console.html).
-
-## Why this project exists
-
-A network scan can tell an analyst what is visible. It does not, by itself, establish whether that visibility is expected, authorised, business-required or risky.
-
-This lab therefore combines discovery data with synthetic asset context and an expected service baseline. The analysis engine reports what the evidence supports and explicitly records what is still unknown.
-
-## What it demonstrates
+This project is designed to show how I approach network-security findings as an analyst rather than treating technical observations as automatic verdicts.
 
 - Parsing Nmap XML into structured observations
 - Validating that only open services become exposure observations
@@ -40,8 +17,8 @@ This lab therefore combines discovery data with synthetic asset context and an e
 - Assigning a **confidence level to the assessment context**, not a probability of compromise
 - Testing the parser, analysis engine and end-to-end evidence pipeline
 - Visualising network exposure without making security decisions in the visualisation layer
-- Working through controlled recruiter investigation scenarios
-- Documenting analyst reasoning and uncertainty
+- Working through controlled investigation scenarios
+- Documenting analyst reasoning, uncertainty and verification decisions
 
 ## Analyst workflow
 
@@ -91,9 +68,9 @@ Run it against the included synthetic evidence:
 python investigation_pipeline.py
 ```
 
-## Recruiter investigation console
+## Investigation console
 
-The console is a browser-based investigation exercise. It loads its cases directly from [`data/cases.json`](data/cases.json), so the case definitions are not duplicated inside the HTML/JavaScript.
+The project includes a browser-based investigation exercise. It loads its cases directly from [`data/cases.json`](data/cases.json), so the case definitions are not duplicated inside the HTML/JavaScript.
 
 Open [`docs/investigation-console.html`](docs/investigation-console.html) through a local HTTP server rather than `file://` because browsers restrict JavaScript requests for local files.
 
@@ -104,12 +81,6 @@ python -m http.server 8000
 ```
 
 Then open:
-
-```text
-http://localhost:8000/docs/recruiter-demo.html
-```
-
-or:
 
 ```text
 http://localhost:8000/docs/investigation-console.html
@@ -135,6 +106,12 @@ The console includes:
 - **Investigation timeline** — presents the sequence of synthetic evidence available to the analyst.
 - **Evidence completeness indicator** — shows known evidence versus outstanding gaps; it is not a probability of compromise.
 - **Decision trail** — records the assessment, rationale, verification reminder and disposition guidance.
+
+## Recruiter brief
+
+For a concise explanation of the investigative approach, see [`docs/recruiter-brief.md`](docs/recruiter-brief.md).
+
+The brief explains the human-in-the-loop approach, evidence gaps, verification and the distinction between an observation and a security verdict.
 
 ## Safety & data
 
@@ -170,9 +147,9 @@ The tests cover both individual analysis decisions and the complete parser → i
 │   ├── asset_inventory.json
 │   └── cases.json
 ├── docs/
-│   ├── recruiter-demo.html       # Guided recruiter experience
 │   ├── investigation-console.html # Hands-on analyst console
-│   ├── recruiter-brief.md
+│   ├── recruiter-brief.md         # Concise project explanation
+│   ├── recruiter-investigation.md # Investigation walkthrough
 │   └── case-notes-template.md
 ├── tests/
 │   ├── test_network_exposure.py
