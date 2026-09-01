@@ -10,12 +10,13 @@ This project shows how I approach network-security findings as an analyst rather
 
 - Parse Nmap XML into structured observations.
 - Validate that only open services become exposure observations.
-- Preserve useful service/version context when it is available.
+- Preserve useful service/version context when available.
 - Map discovered services to a synthetic asset inventory.
+- Validate investigation case data against that inventory.
 - Compare observations with an expected service baseline.
 - Identify unexpected exposure without equating exposure with compromise.
 - Report evidence gaps and recommended next actions.
-- Assign confidence to the strength of the available context, not to the probability of compromise.
+- Assign confidence to the strength of available context, not to the probability of compromise.
 - Test parser failures, assessment decisions and the complete evidence pipeline.
 - Visualise network exposure without making security decisions in the visualisation layer.
 - Work through controlled investigation scenarios and document analyst reasoning.
@@ -60,7 +61,7 @@ network_exposure.py
 Assessment + confidence + evidence gaps + next action
 ```
 
-`investigation_pipeline.py` connects those components. It performs **no network activity**; it only processes an existing Nmap XML file and synthetic/authorised inventory data.
+`investigation_pipeline.py` connects those components. It performs **no network activity**; it only processes an existing Nmap XML file and synthetic/authorised inventory data. It also validates the browser investigation case data before running the sample pipeline.
 
 Run it against the included synthetic evidence:
 
@@ -70,7 +71,7 @@ python investigation_pipeline.py
 
 ## Investigation console
 
-The project includes a browser-based investigation exercise. It loads case data directly from [`data/cases.json`](data/cases.json), keeping the scenario data separate from the interface.
+The project includes a browser-based investigation exercise. It loads case data directly from [`data/cases.json`](data/cases.json), keeping scenario data separate from the interface.
 
 Open [`docs/investigation-console.html`](docs/investigation-console.html) through a local HTTP server rather than `file://` because browsers restrict JavaScript requests for local files.
 
@@ -102,7 +103,7 @@ The console lets an analyst:
 The console includes:
 
 - **Exposure heatmap** — shows observed services against a small set of common service ports without declaring compromise.
-- **Asset relationship view** — provides simplified investigative context around an asset and its observed services.
+- **Asset relationship view** — provides simplified investigative context around an asset and its observed services. It is not a claim about actual routing or attack paths.
 - **Investigation timeline** — presents the sequence of synthetic evidence available to the analyst.
 - **Evidence completeness indicator** — shows known evidence versus outstanding gaps; it is not a probability of compromise.
 - **Decision trail** — records the assessment, rationale, verification reminder and disposition guidance.
@@ -128,7 +129,7 @@ This is an educational investigation lab, not an enterprise asset-management, vu
 
 It does **not** perform authenticated vulnerability assessment, exploitation, packet capture, continuous monitoring or automated incident response.
 
-The assessment engine is intentionally conservative. Its confidence value describes the strength of the available **context**, not the likelihood that a system is compromised.
+The assessment engine is intentionally conservative. Its confidence value describes the strength of available **context**, not the likelihood that a system is compromised.
 
 ## Running the tests
 
@@ -138,12 +139,15 @@ No external service is required for the core tests.
 python -m unittest discover -s tests -v
 ```
 
-The tests cover expected and unexpected exposure, unknown assets, unauthorised assets, baseline normalisation, malformed Nmap input, invalid inventory data and the complete parser → inventory → assessment flow.
+The tests cover expected and unexpected exposure, unknown assets, unauthorised assets, baseline normalisation, malformed Nmap input, invalid inventory data, invalid case data and the complete parser → inventory → assessment flow.
 
 ## Repository structure
 
 ```text
 .
+├── .github/
+│   └── workflows/
+│       └── tests.yml              # Automated test and pipeline checks
 ├── data/
 │   ├── asset_inventory.json
 │   └── cases.json
@@ -154,6 +158,7 @@ The tests cover expected and unexpected exposure, unknown assets, unauthorised a
 │   └── case-notes-template.md     # Analyst notes template
 ├── tests/
 │   ├── test_network_exposure.py
+│   ├── test_nmap_parser.py
 │   └── test_investigation_pipeline.py
 ├── network_exposure.py
 ├── investigation_pipeline.py
