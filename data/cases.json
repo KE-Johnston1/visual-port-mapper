@@ -1,43 +1,5 @@
 {
   "NET-001": {
-    "title": "Unexpected SSH Exposure",
-    "asset": "WEB-02",
-    "ip": "10.10.10.25",
-    "owner": "Web Operations",
-    "role": "Internal web server",
-    "criticality": "Medium",
-    "discovered_services": [
-      {"port": 22, "protocol": "tcp", "service": "SSH"},
-      {"port": 80, "protocol": "tcp", "service": "HTTP"},
-      {"port": 443, "protocol": "tcp", "service": "HTTPS"}
-    ],
-    "expected_services": [80, 443],
-    "known": [
-      "HTTP is an expected service for WEB-02.",
-      "HTTPS is an expected service for WEB-02.",
-      "The asset is owned by Web Operations.",
-      "The asset is classified as Medium criticality."
-    ],
-    "evidence_gaps": [
-      "Whether SSH is authorised for administration.",
-      "Whether the host is reachable from external networks.",
-      "Which administrators require SSH access.",
-      "Whether the discovered SSH service matches the approved baseline."
-    ],
-    "timeline": [
-      {"time": "T0", "event": "Network discovery identifies TCP/22, TCP/80 and TCP/443."},
-      {"time": "T1", "event": "TCP/22 is compared with the documented service baseline and is not listed."},
-      {"time": "T2", "event": "Web Operations states that administrators normally use SSH for maintenance."},
-      {"time": "T3", "event": "Verification is required before the exposure can be closed as expected."}
-    ],
-    "assessment_guidance": {
-      "Expected": "Select only if evidence establishes that SSH is authorised and appropriate for this asset.",
-      "Requires Investigation": "Appropriate when SSH is unexplained but more evidence is available or expected.",
-      "Security Concern": "Appropriate when evidence establishes an unnecessary or materially risky exposure.",
-      "Insufficient Evidence": "Appropriate when the available evidence cannot support a defensible classification."
-    }
-  },
-  "NET-002": {
     "title": "Unknown Asset With Exposed Services",
     "asset": "UNKNOWN-01",
     "ip": "10.10.10.50",
@@ -50,7 +12,7 @@
     ],
     "expected_services": [],
     "known": [
-      "The host responded to network discovery.",
+      "The host responded to authorised network discovery.",
       "SSH is listening on TCP/22.",
       "HTTP-alt is listening on TCP/8080."
     ],
@@ -71,7 +33,42 @@
       "Expected": "Do not select without establishing ownership and authorised purpose.",
       "Requires Investigation": "Appropriate because the asset and services require validation.",
       "Security Concern": "Requires additional evidence demonstrating a security impact or unauthorised exposure.",
-      "Insufficient Evidence": "Defensible if the analyst explains that ownership, purpose and exposure context are unavailable."
+      "Insufficient Evidence": "Defensible when ownership, purpose and exposure context remain unavailable."
+    }
+  },
+  "NET-002": {
+    "title": "Authorised Web Server With Expected Services",
+    "asset": "WEB-01",
+    "ip": "10.10.10.20",
+    "owner": "Web Team",
+    "role": "Web server",
+    "criticality": "High",
+    "discovered_services": [
+      {"port": 22, "protocol": "tcp", "service": "SSH"},
+      {"port": 80, "protocol": "tcp", "service": "HTTP"},
+      {"port": 443, "protocol": "tcp", "service": "HTTPS"}
+    ],
+    "expected_services": [22, 80, 443],
+    "known": [
+      "The asset is owned by the Web Team.",
+      "The asset is classified as high criticality.",
+      "SSH, HTTP and HTTPS are approved services for this asset."
+    ],
+    "evidence_gaps": [
+      "Whether the current configuration still matches the approved change record.",
+      "Whether exposure scope remains appropriate for the asset role."
+    ],
+    "timeline": [
+      {"time": "T0", "event": "Network discovery identifies TCP/22, TCP/80 and TCP/443."},
+      {"time": "T1", "event": "Observed services are compared with the approved service baseline."},
+      {"time": "T2", "event": "All observed services match the authorised baseline."},
+      {"time": "T3", "event": "The analyst records the service as expected while retaining normal change-management checks."}
+    ],
+    "assessment_guidance": {
+      "Expected": "Appropriate because the observed services match the authorised baseline.",
+      "Requires Investigation": "Use only if additional evidence contradicts the current baseline.",
+      "Security Concern": "Requires evidence of unauthorised or materially risky exposure.",
+      "Insufficient Evidence": "Use if the available context cannot establish that the baseline remains valid."
     }
   }
 }
