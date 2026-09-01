@@ -36,6 +36,8 @@ This project shows how I approach network-security findings as an analyst rather
 
 The software presents evidence; **the analyst makes the judgement**.
 
+For the fuller verification sequence, including timestamp correlation, authorisation, change/testing checks, independent evidence and escalation, see [`docs/analyst-workflow.md`](docs/analyst-workflow.md).
+
 ### Assessment states
 
 - **Expected** — available evidence supports the service being authorised and consistent with the baseline.
@@ -95,8 +97,11 @@ The console lets an analyst:
 - compare services with the expected context;
 - review known evidence;
 - identify evidence gaps;
+- work through case-specific verification checks;
 - select an assessment; and
 - record a written rationale and disposition guidance.
+
+The console deliberately blocks **Expected** and **Security Concern** decisions until every case verification check is marked complete. This is a training control rather than proof of external evidence: the underlying verification still has to be performed and retained outside the console.
 
 ## Visual investigation aids
 
@@ -106,7 +111,8 @@ The console includes:
 - **Asset relationship view** — provides simplified investigative context around an asset and its observed services. It is not a claim about actual routing or attack paths.
 - **Investigation timeline** — presents the sequence of synthetic evidence available to the analyst.
 - **Evidence completeness indicator** — shows known evidence versus outstanding gaps; it is not a probability of compromise.
-- **Decision trail** — records the assessment, rationale, verification reminder and disposition guidance.
+- **Verification checklist** — makes case-specific evidence requirements explicit before a stronger disposition can be recorded.
+- **Decision trail** — records the assessment, rationale, verification status and disposition guidance.
 
 ## Recruiter brief
 
@@ -152,6 +158,7 @@ The tests cover expected and unexpected exposure, unknown assets, unauthorised a
 │   ├── asset_inventory.json
 │   └── cases.json
 ├── docs/
+│   ├── analyst-workflow.md        # Verification and escalation workflow
 │   ├── investigation-console.html # Hands-on analyst console
 │   ├── recruiter-brief.md         # Concise project explanation
 │   ├── recruiter-investigation.md # Worked investigation scenario
