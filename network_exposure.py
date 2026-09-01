@@ -18,13 +18,15 @@ class ServiceObservation:
     service: str
 
     def __post_init__(self) -> None:
+        if not isinstance(self.ip, str):
+            raise ValueError("Observation IP address must be a string")
         try:
             ipaddress.ip_address(self.ip)
         except ValueError as exc:
             raise ValueError(f"Invalid observation IP address: {self.ip!r}") from exc
         if isinstance(self.port, bool) or not isinstance(self.port, int) or not 1 <= self.port <= 65535:
             raise ValueError(f"Invalid observation port: {self.port!r}")
-        if self.protocol.lower() not in {"tcp", "udp"}:
+        if not isinstance(self.protocol, str) or self.protocol.strip().lower() not in {"tcp", "udp"}:
             raise ValueError(f"Unsupported observation protocol: {self.protocol!r}")
         if not isinstance(self.service, str) or not self.service.strip():
             raise ValueError("Observation service must be a non-empty string")
@@ -43,6 +45,8 @@ class AssetContext:
             raise ValueError("AssetContext.authorised must be a boolean")
         if not isinstance(self.expected_services, frozenset):
             raise ValueError("AssetContext.expected_services must be a frozenset")
+        if not all(isinstance(item, str) and item.strip() for item in self.expected_services):
+            raise ValueError("AssetContext.expected_services must contain non-empty strings")
 
 
 def _service_key(observation: ServiceObservation) -> str:
