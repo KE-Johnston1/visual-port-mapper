@@ -3,6 +3,16 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.*
 *.log
+outputs/
 *.png
 .DS_Store
+.vscode/
+.idea/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+htmlcov/
+.coverage
