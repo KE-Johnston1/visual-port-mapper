@@ -5,6 +5,7 @@ observed services with an expected asset/service baseline and reports both
 assessment status and evidence gaps for analyst review.
 """
 
+import ipaddress
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -16,6 +17,18 @@ class ServiceObservation:
     protocol: str
     service: str
 
+    def __post_init__(self) -> None:
+        try:
+            ipaddress.ip_address(self.ip)
+        except ValueError as exc:
+            raise ValueError(f"Invalid observation IP address: {self.ip!r}") from exc
+        if isinstance(self.port, bool) or not isinstance(self.port, int) or not 1 <= self.port <= 65535:
+            raise ValueError(f"Invalid observation port: {self.port!r}")
+        if self.protocol.lower() not in {"tcp", "udp"}:
+            raise ValueError(f"Unsupported observation protocol: {self.protocol!r}")
+        if not isinstance(self.service, str) or not self.service.strip():
+            raise ValueError("Observation service must be a non-empty string")
+
 
 @dataclass(frozen=True)
 class AssetContext:
@@ -25,6 +38,17 @@ class AssetContext:
     authorised: bool
     expected_services: frozenset[str]
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.authorised, bool):
+            raise ValueError("AssetContext.authorised must be a boolean")
+        if not isinstance(self.expected_services, frozenset):
+            raise ValueError("AssetContext.expected_services must be a frozenset")
+
+
+def _service_key(observation: ServiceObservation) -> str:
+    """Return the normalised protocol/port key used for baseline comparison."""
+    return f"{observation.protocol.strip().lower()}/{observation.port}"
+
 
 def assess_service(observation: ServiceObservation, context: AssetContext | None) -> dict:
     """Return a conservative analyst assessment without declaring compromise.
@@ -32,7 +56,7 @@ def assess_service(observation: ServiceObservation, context: AssetContext | None
     Confidence describes how strongly the *available context* supports the
     assessment; it is not a probability that the host is compromised.
     """
-    service_key = f"{observation.protocol.lower()}/{observation.port}"
+    service_key = _service_key(observation)
 
     if context is None:
         return {
@@ -61,7 +85,8 @@ def assess_service(observation: ServiceObservation, context: AssetContext | None
             "recommended_action": "Verify ownership and authorised status before deciding whether remediation is required.",
         }
 
-    if service_key in {item.lower() for item in context.expected_services}:
+    expected_services = {item.strip().lower() for item in context.expected_services}
+    if service_key in expected_services:
         return {
             "status": "expected",
             "confidence": "high",
