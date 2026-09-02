@@ -55,7 +55,7 @@
       {"port": 80, "protocol": "tcp", "service": "HTTP"},
       {"port": 443, "protocol": "tcp", "service": "HTTPS"}
     ],
-    "expected_services": [22, 80, 443],
+    "expected_services": ["tcp/22", "tcp/80", "tcp/443"],
     "known": [
       "The asset is owned by the Web Team.",
       "The asset is classified as high criticality.",
