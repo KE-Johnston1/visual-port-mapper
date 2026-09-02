@@ -15,8 +15,12 @@ This project shows how I approach network-security findings as an analyst rather
 - Validate investigation case data against that inventory.
 - Compare observations with an expected service baseline.
 - Identify unexpected exposure without equating exposure with compromise.
-- Report evidence gaps and recommended next actions.
-- Assign confidence to the strength of available context, not to the probability of compromise.
+- Triage findings using severity, asset criticality, business impact and evidence confidence.
+- Consider organisation-specific SLA/OLA and escalation requirements when prioritising response.
+- Use SIEM, EDR and SOAR as investigation accelerators rather than automatic decision-makers.
+- Correlate evidence and document evidence gaps.
+- Record a least-assumptive, defensible assessment and recommended next action.
+- Use MITRE ATT&CK as an analytical aid only where supporting behavioural evidence exists.
 - Test parser failures, assessment decisions and the complete evidence pipeline.
 - Visualise network exposure without making security decisions in the visualisation layer.
 - Work through controlled investigation scenarios and document analyst reasoning.
@@ -24,19 +28,21 @@ This project shows how I approach network-security findings as an analyst rather
 ## Analyst workflow
 
 ```text
-1. Establish asset identity and ownership
-2. Review discovered services
-3. Compare observations with the expected baseline
-4. Identify what is known
-5. Identify evidence gaps
-6. Gather and verify additional context
-7. Make a defensible assessment
-8. Document rationale and next action
+1. Observation / alert
+2. Triage
+3. Severity + asset criticality + business impact
+4. Evidence enrichment and correlation
+5. Verification
+6. Defensible assessment
+7. Escalation / containment / remediation / monitoring / closure
+8. Documentation against applicable response requirements
 ```
 
 The software presents evidence; **the analyst makes the judgement**.
 
-For the fuller verification sequence, including timestamp correlation, authorisation, change/testing checks, independent evidence and escalation, see [`docs/analyst-workflow.md`](docs/analyst-workflow.md).
+For the fuller verification sequence, including timestamp correlation, authorisation, change/testing checks, independent evidence, security tooling, prioritisation and escalation, see [`docs/analyst-workflow.md`](docs/analyst-workflow.md).
+
+For the reasoning behind the workflow, see [`docs/analyst-design-decisions.md`](docs/analyst-design-decisions.md).
 
 ### Assessment states
 
@@ -46,6 +52,53 @@ For the fuller verification sequence, including timestamp correlation, authorisa
 - **Insufficient Evidence** — the available information is not enough to make a defensible classification.
 
 Uncertainty is documented rather than converted into a false positive or invented risk rating.
+
+## Triage, prioritisation and business impact
+
+A production SOC must balance investigation quality with timely response. The lab therefore treats prioritisation as a combination of:
+
+- **Severity** — how concerning the activity or condition is based on available evidence.
+- **Asset criticality** — how important the affected system is to the organisation.
+- **Business impact** — potential operational, customer or service impact.
+- **Evidence confidence** — how strongly the current context is supported.
+- **Response requirements** — applicable organisational SLAs, OLAs, escalation procedures and incident-response playbooks.
+
+The project deliberately avoids an invented universal risk formula. A high-severity event affecting a critical asset may require rapid escalation even while investigation questions remain open. An expected service on a known asset may follow normal verification instead.
+
+## SIEM, EDR and SOAR in the investigation workflow
+
+Security tooling can reduce manual investigation time by correlating evidence, enriching observations and automating repeatable tasks:
+
+| Capability | Investigation value |
+|---|---|
+| **SIEM** | Correlates authentication, network and security events across sources and time windows. |
+| **EDR** | Provides endpoint/process, user, file and network telemetry. |
+| **SOAR** | Automates repeatable enrichment and approved playbook steps. |
+| **Analyst** | Validates evidence, establishes context and makes the final defensible decision. |
+
+The principle is:
+
+**Tools accelerate evidence gathering → analyst validates evidence → analyst makes the decision.**
+
+This project does **not** claim to operate live SIEM, EDR or SOAR integrations. They are represented as production SOC concepts that inform the workflow.
+
+## MITRE ATT&CK as an analytical aid
+
+Where appropriate, observed behaviour can be considered against MITRE ATT&CK using:
+
+```text
+Observed behaviour
+      ↓
+Potential technique
+      ↓
+Supporting evidence
+      ↓
+Confidence / uncertainty
+      ↓
+Next investigation step
+```
+
+A port or service is not automatically treated as an ATT&CK technique. Mapping requires supporting behavioural evidence.
 
 ## End-to-end evidence pipeline
 
@@ -120,6 +173,28 @@ For a concise explanation of the investigative approach, see [`docs/recruiter-br
 
 The separate [`docs/recruiter-investigation.md`](docs/recruiter-investigation.md) provides a worked investigation scenario and example analyst communication.
 
+## Design decisions and learning
+
+This project is deliberately built around a few principles:
+
+1. **Observation is not automatically compromise.** A scan can establish what was observed, not why it exists.
+2. **Context comes before conclusion.** Ownership, business purpose, criticality, authorisation and baseline matter.
+3. **Evidence should be verified.** Plausible explanations are not treated as verified explanations.
+4. **Uncertainty is useful information.** Evidence gaps are documented instead of hidden behind an invented score.
+5. **Automation supports analysts.** SIEM, EDR and SOAR can accelerate investigation but do not replace judgement.
+6. **Time is part of operational security.** Severity, business impact and organisational response requirements influence priority.
+7. **Communication is part of the investigation.** A defensible result should explain the finding, evidence, gaps, impact, decision and next action.
+
+The full rationale is documented in [`docs/analyst-design-decisions.md`](docs/analyst-design-decisions.md).
+
+## AI-assisted development transparency
+
+AI tools were used during development as a coding and research assistant, including support with implementation ideas, debugging, documentation and test development. Project requirements, investigation workflow, security assumptions and final design decisions were reviewed and validated by the author.
+
+AI-generated suggestions were treated as proposals rather than authoritative answers. Changes were tested against the project's requirements and expected behaviour, and design decisions were reviewed for security reasoning, limitations and accuracy.
+
+The purpose of this disclosure is transparency: AI assisted parts of the development process, but the project is intended to demonstrate the author's reasoning, validation and decision-making rather than autonomous AI design.
+
 ## Safety & data
 
 - Test data is synthetic and intended for educational use.
@@ -158,7 +233,8 @@ The tests cover expected and unexpected exposure, unknown assets, unauthorised a
 │   ├── asset_inventory.json
 │   └── cases.json
 ├── docs/
-│   ├── analyst-workflow.md        # Verification and escalation workflow
+│   ├── analyst-workflow.md        # Verification, prioritisation and escalation workflow
+│   ├── analyst-design-decisions.md # Reasoning, design decisions and AI disclosure
 │   ├── investigation-console.html # Hands-on analyst console
 │   ├── recruiter-brief.md         # Concise project explanation
 │   ├── recruiter-investigation.md # Worked investigation scenario
