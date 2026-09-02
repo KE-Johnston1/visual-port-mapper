@@ -158,14 +158,15 @@ def load_cases(
             discovered_keys.add(f"{protocol}/{port}")
 
         expected = case["expected_services"]
-        if not isinstance(expected, list) or not all(
-            isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535
-            for port in expected
-        ):
-            raise CaseDataError(f"Case {case_id!r} expected_services must contain valid port numbers.")
-        expected_keys = {f"tcp/{port}" for port in expected}
+        if not isinstance(expected, list) or not all(isinstance(item, str) for item in expected):
+            raise CaseDataError(
+                f"Case {case_id!r} expected_services must contain protocol/port service keys."
+            )
+        expected_keys = {_validate_service_key(item, source=f"Case {case_id!r}") for item in expected}
         if not expected_keys.issubset(discovered_keys):
-            raise CaseDataError(f"Case {case_id!r} lists expected ports that are not present in discovered_services.")
+            raise CaseDataError(
+                f"Case {case_id!r} lists expected services that are not present in discovered_services."
+            )
 
         for field in ("known", "evidence_gaps", "verification_checks"):
             if not isinstance(case[field], list) or not all(
