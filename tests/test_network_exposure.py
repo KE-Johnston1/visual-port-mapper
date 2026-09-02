@@ -20,8 +20,7 @@ class NetworkExposureTests(unittest.TestCase):
         self.assertFalse(result["evidence_gaps"])
 
     def test_service_baseline_comparison_is_case_insensitive(self):
-        asset = AssetContext("Web Team", "Web server", "high", True, frozenset({"TCP/443"}))
-        result = assess_service(ServiceObservation("10.10.10.20", 443, "tcp", "https"), asset)
+        result = assess_service(ServiceObservation("10.10.10.20", 443, "TCP", "https"), self.asset)
         self.assertEqual(result["status"], "expected")
 
     def test_unexpected_service_requires_investigation(self):
