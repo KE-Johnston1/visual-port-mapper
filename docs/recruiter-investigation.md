@@ -22,6 +22,21 @@ Observed:
 
 The distinction matters: **“not established” is not the same as “confirmed unauthorised.”**
 
+## Triage and prioritisation
+
+The first step is not to jump straight to a verdict. The analyst establishes what is known, what is missing and how urgently the case needs attention.
+
+Initial triage considers:
+
+- severity of the observation and any supporting evidence;
+- asset criticality, once established;
+- potential business impact;
+- whether there is evidence of active compromise or material exposure;
+- evidence confidence and gaps; and
+- applicable organisational escalation, SLA/OLA and incident-response requirements.
+
+Because the asset owner and criticality are initially unknown, the case has significant uncertainty. That uncertainty should increase the need for verification, not be converted into an invented risk score.
+
 ## Analyst questions
 
 1. Is `10.10.10.50` a known asset?
@@ -50,6 +65,16 @@ At the initial stage, the analyst does not know:
 - historical state
 - whether authorised testing or maintenance explains the observation
 
+## Security tooling that could accelerate the investigation
+
+In a production SOC, the analyst could use available tooling to reduce manual investigation time:
+
+- **SIEM:** correlate authentication, network and security events around the discovery time.
+- **EDR:** investigate endpoint/process, user, file and network telemetry if the asset is covered.
+- **SOAR:** automate repeatable enrichment or approved investigation playbook steps.
+
+These tools accelerate evidence gathering and correlation; they do not automatically determine whether the observation is malicious. The analyst validates the evidence and makes the decision.
+
 ## Verification sequence
 
 The analyst should establish the facts in roughly this order:
@@ -60,7 +85,8 @@ The analyst should establish the facts in roughly this order:
 4. Check approved change, deployment, maintenance and security-testing activity.
 5. Correlate independent network, authentication and host evidence where available.
 6. Assess the business impact and exposure scope.
-7. Record the least-conclusive assessment supported by the evidence.
+7. Determine whether severity or organisational response requirements require escalation before all questions are closed.
+8. Record the least-conclusive assessment supported by the evidence.
 
 A plausible explanation is not treated as a verified explanation until the relevant evidence has been checked.
 
@@ -70,7 +96,7 @@ A plausible explanation is not treated as a verified explanation until the relev
 
 Use when ownership, business purpose, service authorisation and the relevant explanation are verified and the observed service matches the approved baseline.
 
-### Investigate
+### Requires Investigation
 
 Use when an exposed service or asset is not explained by the current baseline and there is enough evidence to justify further investigation.
 
@@ -84,8 +110,20 @@ Use only after sufficient evidence establishes that the exposure is unauthorised
 
 ## Analyst communication example
 
-> The scan identified SSH and TCP/8080 on 10.10.10.50. The asset is not currently associated with an owner or approved service baseline, so the authorisation status has not been established. This is insufficient to conclude compromise. I recommend verifying ownership and business purpose, confirming authorised services, checking the exact discovery timestamp against change, maintenance or security-testing activity, validating exposure scope, reviewing service/version context, and correlating relevant network or authentication evidence before deciding whether remediation or escalation is required.
+> **Priority:** Requires investigation; urgency to be determined using severity, asset criticality, business impact and applicable response requirements.
+>
+> **Finding:** The scan identified SSH and TCP/8080 on 10.10.10.50.
+>
+> **Current assessment:** The asset is not currently associated with an owner or approved service baseline, so authorisation has not been established. This is insufficient to conclude compromise.
+>
+> **Evidence gaps:** Ownership, business purpose, criticality, service authorisation, exposure scope, service/version context and relevant change/testing history remain to be verified.
+>
+> **Next action:** Verify ownership and business purpose, confirm authorised services, correlate the discovery timestamp with change/maintenance/security-testing activity, validate exposure scope and review relevant SIEM/EDR/network/authentication evidence where available.
+>
+> **Escalation:** Escalate according to the organisation's severity, business-impact and incident-response requirements if evidence indicates active compromise, unauthorised exposure or material risk.
 
 ## Learning objective
 
-This scenario demonstrates the difference between **network discovery** and **security judgement**. The tool provides evidence. The analyst provides context, challenges assumptions, identifies gaps and documents the reasoning behind the decision.
+This scenario demonstrates the difference between **network discovery** and **security judgement**. The tool provides evidence. The analyst provides context, challenges assumptions, identifies gaps, considers business impact and documents the reasoning behind the decision.
+
+The design intentionally avoids false precision: no invented risk score is used simply to make the project appear more sophisticated.
