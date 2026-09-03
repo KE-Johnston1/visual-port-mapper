@@ -5,6 +5,7 @@ from pathlib import Path
 
 from investigation_pipeline import CaseDataError, InventoryError, analyse_nmap_file, load_cases, load_inventory
 from nmap_parser import NmapParseError, parse_nmap_xml
+from network_exposure import AssetContext
 
 
 ROOT = Path(__file__).parents[1]
@@ -36,6 +37,33 @@ class InvestigationPipelineTests(unittest.TestCase):
             self.assertEqual(case["role"], context.role, case_id)
             self.assertEqual(case["criticality"].lower(), context.criticality.lower(), case_id)
             self.assertTrue(case["verification_checks"], case_id)
+
+    def test_case_expected_services_use_protocol_qualified_keys(self):
+        cases = load_cases()
+        for case_id, case in cases.items():
+            for service_key in case["expected_services"]:
+                self.assertRegex(service_key, r"^(tcp|udp)/[1-9][0-9]{0,4}$", case_id)
+                self.assertIn(service_key, {f"{s['protocol'].lower()}/{s['port']}" for s in case["discovered_services"]})
+
+    def test_console_uses_service_presence_matrix_language(self):
+        console = (ROOT / "docs" / "investigation-console.html").read_text(encoding="utf-8")
+        self.assertIn("Service-presence matrix", console)
+        self.assertNotIn("Exposure heatmap</h2>", console)
+        self.assertIn("serviceKey(s)", console)
+
+    def test_asset_context_rejects_invalid_expected_service_keys(self):
+        for expected in (frozenset({"ssh/22"}), frozenset({"tcp/0"}), frozenset({"tcp/65536"}), frozenset({"icmp/7"}), frozenset({"TCP/22"})):
+            with self.subTest(expected=expected):
+                with self.assertRaises(ValueError):
+                    AssetContext("Team", "Server", "High", True, expected)
+
+    def test_asset_context_rejects_empty_context_fields(self):
+        with self.assertRaises(ValueError):
+            AssetContext("", "Server", "High", True, frozenset())
+        with self.assertRaises(ValueError):
+            AssetContext("Team", "", "High", True, frozenset())
+        with self.assertRaises(ValueError):
+            AssetContext("Team", "Server", "", True, frozenset())
 
     def test_unknown_asset_is_insufficient_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -111,6 +139,24 @@ class InvestigationPipelineTests(unittest.TestCase):
             path = Path(directory) / "cases.json"
             cases = load_cases()
             cases["NET-BAD"] = dict(cases["NET-001"], discovered_services=[{"port": 70000, "protocol": "tcp", "service": "SSH"}])
+            path.write_text(json.dumps(cases), encoding="utf-8")
+            with self.assertRaises(CaseDataError):
+                load_cases(path)
+
+    def test_case_loader_rejects_numeric_expected_services(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cases.json"
+            cases = load_cases()
+            cases["NET-BAD"] = dict(cases["NET-002"], expected_services=[22, 80, 443])
+            path.write_text(json.dumps(cases), encoding="utf-8")
+            with self.assertRaises(CaseDataError):
+                load_cases(path)
+
+    def test_case_loader_rejects_expected_service_protocol_mismatch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cases.json"
+            cases = load_cases()
+            cases["NET-BAD"] = dict(cases["NET-002"], expected_services=["udp/80"])
             path.write_text(json.dumps(cases), encoding="utf-8")
             with self.assertRaises(CaseDataError):
                 load_cases(path)

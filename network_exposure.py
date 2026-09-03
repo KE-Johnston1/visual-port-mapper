@@ -41,12 +41,25 @@ class AssetContext:
     expected_services: frozenset[str]
 
     def __post_init__(self) -> None:
+        for field_name, value in (("owner", self.owner), ("role", self.role), ("criticality", self.criticality)):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"AssetContext.{field_name} must be a non-empty string")
         if not isinstance(self.authorised, bool):
             raise ValueError("AssetContext.authorised must be a boolean")
         if not isinstance(self.expected_services, frozenset):
             raise ValueError("AssetContext.expected_services must be a frozenset")
-        if not all(isinstance(item, str) and item.strip() for item in self.expected_services):
-            raise ValueError("AssetContext.expected_services must contain non-empty strings")
+        for item in self.expected_services:
+            if not isinstance(item, str):
+                raise ValueError("AssetContext.expected_services must contain service strings")
+            parts = item.strip().lower().split("/", 1)
+            if len(parts) != 2 or parts[0] not in {"tcp", "udp"} or not parts[1].isdigit():
+                raise ValueError(
+                    f"Invalid expected service key {item!r}; expected tcp/port or udp/port"
+                )
+            if not 1 <= int(parts[1]) <= 65535:
+                raise ValueError(f"Invalid port in expected service key {item!r}")
+            if item != f"{parts[0]}/{int(parts[1])}":
+                raise ValueError(f"Expected service key must be normalised: {item!r}")
 
 
 def _service_key(observation: ServiceObservation) -> str:
@@ -89,7 +102,7 @@ def assess_service(observation: ServiceObservation, context: AssetContext | None
             "recommended_action": "Verify ownership and authorised status before deciding whether remediation is required.",
         }
 
-    expected_services = {item.strip().lower() for item in context.expected_services}
+    expected_services = set(context.expected_services)
     if service_key in expected_services:
         return {
             "status": "expected",
