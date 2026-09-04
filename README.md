@@ -160,7 +160,7 @@ The console deliberately blocks **Expected** and **Security Concern** decisions 
 
 The console includes:
 
-- **Exposure heatmap** — shows observed services against a small set of common service ports without declaring compromise.
+- **Service-presence matrix** — shows observed services against a small set of common service ports without declaring compromise.
 - **Asset relationship view** — provides simplified investigative context around an asset and its observed services. It is not a claim about actual routing or attack paths.
 - **Investigation timeline** — presents the sequence of synthetic evidence available to the analyst.
 - **Evidence completeness indicator** — shows known evidence versus outstanding gaps; it is not a probability of compromise.
@@ -227,8 +227,11 @@ The tests cover expected and unexpected exposure, unknown assets, unauthorised a
 ```text
 .
 ├── .github/
+│   ├── dependabot.yml             # Dependency update configuration
 │   └── workflows/
-│       └── tests.yml              # Automated test and pipeline checks
+│       ├── tests.yml              # Automated test and pipeline checks
+│       └── codeql.yml             # GitHub CodeQL analysis
+├── SECURITY.md                    # Security and responsible-disclosure guidance
 ├── data/
 │   ├── asset_inventory.json
 │   └── cases.json
