@@ -6,7 +6,7 @@ A defensive Python portfolio lab for turning **authorised Nmap discovery data** 
 
 ## What this project demonstrates
 
-This project shows how I approach network-security findings as an analyst rather than treating technical observations as automatic verdicts.
+This project shows how I approach network security findings as an analyst rather than treating technical observations as automatic verdicts.
 
 - Parse Nmap XML into structured observations.
 - Validate that only open services become exposure observations.
@@ -16,8 +16,8 @@ This project shows how I approach network-security findings as an analyst rather
 - Compare observations with an expected service baseline.
 - Identify unexpected exposure without equating exposure with compromise.
 - Triage findings using severity, asset criticality, business impact and evidence confidence.
-- Consider organisation-specific SLA/OLA and escalation requirements when prioritising response.
-- Use SIEM, EDR and SOAR as investigation accelerators rather than automatic decision-makers.
+- Consider organisation specific SLA/OLA and escalation requirements when prioritising response.
+- Use SIEM, EDR and SOAR as investigation accelerators rather than automatic decision makers.
 - Correlate evidence and document evidence gaps.
 - Record a least-assumptive, defensible assessment and recommended next action.
 - Use MITRE ATT&CK as an analytical aid only where supporting behavioural evidence exists.
@@ -100,7 +100,7 @@ Next investigation step
 
 A port or service is not automatically treated as an ATT&CK technique. Mapping requires supporting behavioural evidence.
 
-## End-to-end evidence pipeline
+## End to end evidence pipeline
 
 ```text
 sample_scan.xml
@@ -150,7 +150,7 @@ The console lets an analyst:
 - compare services with the expected context;
 - review known evidence;
 - identify evidence gaps;
-- work through case-specific verification checks;
+- work through case specific verification checks;
 - select an assessment; and
 - record a written rationale and disposition guidance.
 
@@ -193,20 +193,20 @@ AI tools were used during development as a coding and research assistant, includ
 
 AI-generated suggestions were treated as proposals rather than authoritative answers. Changes were tested against the project's requirements and expected behaviour, and design decisions were reviewed for security reasoning, limitations and accuracy.
 
-The purpose of this disclosure is transparency: AI assisted parts of the development process, but the project is intended to demonstrate the author's reasoning, validation and decision-making rather than autonomous AI design.
+The purpose of this disclosure is transparency: AI assisted parts of the development process, but the project is intended to demonstrate the author's reasoning, validation and decision making rather than autonomous AI design.
 
 ## Safety & data
 
 - Test data is synthetic and intended for educational use.
 - Only scan systems you own or have explicit permission to test.
 - Do not place real credentials, customer data, private logs or production network captures in this repository.
-- Do not use network-scanning functionality against public or third-party systems without explicit authorisation.
+- Do not use network scanning functionality against public or third-party systems without explicit authorisation.
 - The project does not execute Nmap, capture packets, exploit hosts or perform automated incident response.
 - Generated logs, Python caches, coverage data and local output files are excluded through `.gitignore`.
 
 ## Limitations
 
-This is an educational investigation lab, not an enterprise asset-management, vulnerability-management or SIEM product.
+This is an educational investigation lab, not an enterprise asset management, vulnerability management or SIEM product.
 
 It does **not** perform authenticated vulnerability assessment, exploitation, packet capture, continuous monitoring or automated incident response.
 
