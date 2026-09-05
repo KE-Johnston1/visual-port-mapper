@@ -14,33 +14,39 @@
     "known": [
       "The host responded to authorised network discovery.",
       "SSH is listening on TCP/22.",
-      "HTTP-alt is listening on TCP/8080."
+      "HTTP-alt is listening on TCP/8080.",
+      "Synthetic firewall telemetry shows TCP/8080 traffic was allowed from an external source.",
+      "Synthetic IDS telemetry generated an HTTP reconnaissance alert for TCP/8080.",
+      "Synthetic IPS telemetry blocked a suspicious HTTP request pattern for TCP/8080."
     ],
     "evidence_gaps": [
       "Asset owner and business purpose.",
       "Asset criticality.",
       "Whether either service is authorised.",
-      "Whether the host is externally reachable.",
-      "Operating system and service versions."
+      "Whether the host is externally reachable beyond the synthetic firewall observation.",
+      "Operating system and service versions.",
+      "Whether the IDS/IPS events represent the same activity as the discovery observation and whether any request reached the application."
     ],
     "verification_checks": [
       "Identify the asset owner and business purpose.",
       "Confirm whether the host and both exposed services are authorised.",
       "Correlate the discovery time with approved changes, maintenance or testing activity.",
       "Verify exposure scope using authorised network, firewall or routing evidence.",
+      "Review firewall, IDS and IPS events for matching timestamps, source, destination, protocol and port.",
       "Establish service and operating-system context before deciding on remediation."
     ],
     "timeline": [
       {"time": "T0", "event": "Network discovery identifies an otherwise unknown host."},
       {"time": "T1", "event": "TCP/22 and TCP/8080 are observed as listening services."},
-      {"time": "T2", "event": "No owner, business purpose or approved service baseline is available."},
-      {"time": "T3", "event": "Ownership and authorisation must be established before closure."}
+      {"time": "T2", "event": "Synthetic firewall telemetry shows an allowed TCP/8080 connection from an external source."},
+      {"time": "T3", "event": "Synthetic IDS alerts on HTTP reconnaissance and synthetic IPS blocks a suspicious HTTP request pattern."},
+      {"time": "T4", "event": "No owner, business purpose or approved service baseline is available; the analyst must correlate and verify before closure."}
     ],
     "assessment_guidance": {
-      "Expected": "Do not select without establishing ownership and authorised purpose.",
-      "Requires Investigation": "Appropriate because the asset and services require validation.",
-      "Security Concern": "Requires additional evidence demonstrating a security impact or unauthorised exposure.",
-      "Insufficient Evidence": "Defensible when ownership, purpose and exposure context remain unavailable."
+      "Expected": "Do not select without establishing ownership and authorised purpose and validating the network telemetry context.",
+      "Requires Investigation": "Appropriate because the asset, services and network telemetry require validation.",
+      "Security Concern": "Requires additional evidence demonstrating a security impact or unauthorised exposure; IDS/IPS alerts alone are not proof of compromise.",
+      "Insufficient Evidence": "Defensible when ownership, purpose, exposure or telemetry correlation remains unavailable."
     }
   },
   "NET-002": {
@@ -59,29 +65,33 @@
     "known": [
       "The asset is owned by the Web Team.",
       "The asset is classified as high criticality.",
-      "SSH, HTTP and HTTPS are approved services for this asset."
+      "SSH, HTTP and HTTPS are approved services for this asset.",
+      "Synthetic firewall telemetry shows an internal HTTPS connection matching the expected service."
     ],
     "evidence_gaps": [
       "Whether the current configuration still matches the approved change record.",
-      "Whether exposure scope remains appropriate for the asset role."
+      "Whether exposure scope remains appropriate for the asset role.",
+      "Whether additional IDS/IPS telemetry exists outside the synthetic case evidence."
     ],
     "verification_checks": [
       "Confirm the service baseline is current and tied to an approved change or configuration record.",
       "Verify the observed exposure scope remains appropriate for the asset role.",
       "Check whether any recent configuration or ownership change could explain the observation.",
+      "Review available firewall, IDS and IPS telemetry for contradictory or relevant activity.",
       "Record the verification evidence before treating the assessment as closed."
     ],
     "timeline": [
       {"time": "T0", "event": "Network discovery identifies TCP/22, TCP/80 and TCP/443."},
       {"time": "T1", "event": "Observed services are compared with the approved service baseline."},
-      {"time": "T2", "event": "All observed services match the authorised baseline."},
-      {"time": "T3", "event": "The analyst records the service as expected while retaining normal change-management checks."}
+      {"time": "T2", "event": "Synthetic firewall telemetry shows expected internal HTTPS traffic."},
+      {"time": "T3", "event": "All observed services match the authorised baseline, subject to normal verification."},
+      {"time": "T4", "event": "The analyst records the service as expected while retaining normal change-management and network-telemetry checks."}
     ],
     "assessment_guidance": {
-      "Expected": "Appropriate because the observed services match the authorised baseline, subject to verification.",
-      "Requires Investigation": "Use if additional evidence contradicts the current baseline.",
-      "Security Concern": "Requires evidence of unauthorised or materially risky exposure.",
-      "Insufficient Evidence": "Use if the available context cannot establish that the baseline remains valid."
+      "Expected": "Appropriate because the observed services match the authorised baseline and the available network telemetry is consistent, subject to verification.",
+      "Requires Investigation": "Use if additional evidence contradicts the current baseline or network policy.",
+      "Security Concern": "Requires evidence of unauthorised or materially risky exposure; a network alert by itself is not enough.",
+      "Insufficient Evidence": "Use if the available context cannot establish that the baseline and network exposure remain valid."
     }
   }
 }

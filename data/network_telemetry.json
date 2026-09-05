@@ -1,0 +1,12 @@
+{
+  "NET-001": {
+    "firewall": [{"timestamp":"2026-09-03T09:14:22+01:00","source_ip":"198.51.100.24","destination_ip":"10.10.10.50","destination_port":8080,"protocol":"tcp","action":"allowed","direction":"internet-to-server","rule":"web-publish-review","note":"Synthetic reachability evidence; not evidence of compromise."}],
+    "ids": [{"timestamp":"2026-09-03T09:14:24+01:00","source_ip":"198.51.100.24","destination_ip":"10.10.10.50","destination_port":8080,"protocol":"tcp","signature":"HTTP reconnaissance pattern","severity":"medium","action":"alerted","note":"Synthetic detection; supports investigation but does not establish successful exploitation."}],
+    "ips": [{"timestamp":"2026-09-03T09:14:25+01:00","source_ip":"198.51.100.24","destination_ip":"10.10.10.50","destination_port":8080,"protocol":"tcp","signature":"Suspicious HTTP request pattern","severity":"medium","action":"blocked","note":"Synthetic block evidence; does not establish compromise."}]
+  },
+  "NET-002": {
+    "firewall": [{"timestamp":"2026-09-03T09:21:10+01:00","source_ip":"10.10.20.15","destination_ip":"10.10.10.20","destination_port":443,"protocol":"tcp","action":"allowed","direction":"internal-to-server","rule":"web-service-https","note":"Synthetic traffic matching expected service and network policy."}],
+    "ids": [],
+    "ips": []
+  }
+}

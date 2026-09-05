@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from investigation_pipeline import CaseDataError, InventoryError, analyse_nmap_file, load_cases, load_inventory
+from investigation_pipeline import CaseDataError, InventoryError, TelemetryError, analyse_nmap_file, load_cases, load_inventory, load_network_telemetry
 from nmap_parser import NmapParseError, parse_nmap_xml
 from network_exposure import AssetContext
 
@@ -45,11 +45,47 @@ class InvestigationPipelineTests(unittest.TestCase):
                 self.assertRegex(service_key, r"^(tcp|udp)/[1-9][0-9]{0,4}$", case_id)
                 self.assertIn(service_key, {f"{s['protocol'].lower()}/{s['port']}" for s in case["discovered_services"]})
 
-    def test_console_uses_service_presence_matrix_language(self):
+    def test_network_telemetry_is_loaded_for_each_case(self):
+        telemetry = load_network_telemetry()
+        self.assertEqual(set(telemetry), {"NET-001", "NET-002"})
+        self.assertEqual(len(telemetry["NET-001"]["firewall"]), 1)
+        self.assertEqual(len(telemetry["NET-001"]["ids"]), 1)
+        self.assertEqual(len(telemetry["NET-001"]["ips"]), 1)
+        self.assertEqual(telemetry["NET-001"]["ips"][0]["action"], "blocked")
+        self.assertEqual(telemetry["NET-001"]["ids"][0]["severity"], "medium")
+
+    def test_network_telemetry_is_correlatable(self):
+        event = load_network_telemetry()["NET-001"]["firewall"][0]
+        self.assertEqual(f"{event['protocol']}/{event['destination_port']}", "tcp/8080")
+        self.assertEqual(event["destination_ip"], "10.10.10.50")
+        self.assertTrue(event["timestamp"].endswith("+01:00"))
+
+    def test_network_telemetry_rejects_invalid_event(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "telemetry.json"
+            telemetry = load_network_telemetry()
+            telemetry["NET-001"]["firewall"][0]["destination_port"] = 70000
+            path.write_text(json.dumps(telemetry), encoding="utf-8")
+            with self.assertRaises(TelemetryError):
+                load_network_telemetry(path)
+
+    def test_network_telemetry_requires_ids_ips_signature_context(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "telemetry.json"
+            telemetry = load_network_telemetry()
+            telemetry["NET-001"]["ids"][0].pop("signature")
+            path.write_text(json.dumps(telemetry), encoding="utf-8")
+            with self.assertRaises(TelemetryError):
+                load_network_telemetry(path)
+
+    def test_console_uses_network_telemetry_language(self):
         console = (ROOT / "docs" / "investigation-console.html").read_text(encoding="utf-8")
-        self.assertIn("Service-presence matrix", console)
+        self.assertIn("Network security telemetry", console)
+        self.assertIn("Firewall", console)
+        self.assertIn("IDS", console)
+        self.assertIn("IPS", console)
+        self.assertIn("network_telemetry.json", console)
         self.assertNotIn("Exposure heatmap</h2>", console)
-        self.assertIn("serviceKey(s)", console)
 
     def test_asset_context_rejects_invalid_expected_service_keys(self):
         for expected in (frozenset({"ssh/22"}), frozenset({"tcp/0"}), frozenset({"tcp/65536"}), frozenset({"icmp/7"}), frozenset({"TCP/22"})):
